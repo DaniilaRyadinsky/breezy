@@ -1,0 +1,30 @@
+.btn {
+    height: 40px;
+    padding: 13px 24px 13px 24px;
+    margin: 0;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 550;
+    letter-spacing: 0rem;
+    line-height: 0.875rem;
+    transition: background-color .10s cubic-bezier(.4, 0, .2, 1);
+}
+
+.primary {
+    color: var(--md-sys-color-on-primary);
+    background-color: var(--md-sys-color-primary);
+}
+
+.primary:hover {
+    background-color: var(--md-sys-color-on-primary-container);
+}
+
+.on_primary {
+    color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-on-primary);
+}
+
+.on_primary:hover {
+    background-color: var(--md-sys-color-primary-container);
+}

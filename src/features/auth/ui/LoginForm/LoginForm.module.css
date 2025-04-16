@@ -1,0 +1,36 @@
+.login_form {
+    width: 460px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+    gap: 60px;
+}
+
+.recovery_link_container {
+    margin-top: 10px;
+}
+
+.recovery_link {
+    border-radius: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+    transition: background-color .10s cubic-bezier(.4, 0, .2, 1);
+    color: var(--md-sys-color-primary);
+    text-decoration: none;
+}
+
+.err_label {
+    color: var(--md-sys-color-error);
+    font-size: 0.75rem;
+}
+
+.recovery_link:hover {
+    background-color: var(--md-sys-color-primary-container);
+}
+
+.btn_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 40px;
+}

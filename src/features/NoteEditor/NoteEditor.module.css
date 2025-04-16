@@ -1,0 +1,7 @@
+.main_note {
+    width: 100%;
+    margin:60px 170px 60px 90px;
+    border-radius: 25px;
+    padding:60px 60px 60px 60px;
+    background-color: var(--md-sys-color-on-primary);
+}
