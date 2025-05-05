@@ -1,20 +1,28 @@
-import React, { useState, useEffect, useRef, KeyboardEvent, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Button } from '../../../../shared/ui/Button/index'
-import { Input } from '../../../../shared/ui/Input/index'
-import { fetchLogin } from '../../api/auth'
-import styles from './LoginForm.module.css'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Input } from '../../../../shared/ui/Input'
+import { Button } from '../../../../shared/ui/Button'
+import styles from './RegisterForm.module.css'
+import { fetchReg } from '../../api/auth'
 
-export const LoginForm = () => {
+export const RegisterForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [password2, setPassword2] = useState('')
   const [inputModeLog, setInputModeLog] = useState('')
   const [inputModePass, setInputModePass] = useState('')
+  const [inputModePass2, setInputModePass2] = useState('')
+
   const loginRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
+  const password2Ref = useRef<HTMLInputElement>(null)
+
+  let navigate = useNavigate()
 
   const validateData = () => {
+    setInputModeLog('');
+    setInputModePass('');
+    setInputModePass2('');
     if (username === '') {
       setInputModeLog('none')
       loginRef.current?.focus()
@@ -23,16 +31,19 @@ export const LoginForm = () => {
       setInputModePass('none')
       passwordRef.current?.focus()
     }
+    else if (password2 === '') {
+      setInputModePass2('none')
+      password2Ref.current?.focus()
+    }
     else {
-      setInputModeLog('');
-      setInputModePass('');
-      fetchLogin({
+      fetchReg({
         username,
         password,
-        onSuccess: () => navigate('/main'),
+        onSuccess: () => navigate('/login'),
         onError: () => {
           setInputModeLog('err');
           setInputModePass('err');
+          setInputModePass2('err');
         }
       })
     }
@@ -52,37 +63,40 @@ export const LoginForm = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [username, password]);
+  }, [username, password, password2]);
 
   return (
     <div className={styles.login_form}>
       <div>
         <Input
-          ref={loginRef}
-          type='email'
           mode={(inputModeLog === 'err' || inputModeLog === 'none') ? 'err' : ''}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}>
+          type='email' value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          ref={loginRef}>
           Телефон или адрес эл. почты
         </Input>
-        {/* {inputModeLog === 'err' && <span className={styles.err_label}>Не удалось найти аккаунт Breezy.</span>} */}
         {inputModeLog === 'none' && <span className={styles.err_label}>Введите логин.</span>}
+        {inputModeLog === 'err' && <span className={styles.err_label}>Имя пользователя занято.</span>}
         <Input
-          ref={passwordRef}
-          type='password'
           mode={(inputModePass === 'err' || inputModePass === 'none') ? 'err' : ''}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}>
+          type='password' value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          ref={passwordRef}>
           Пароль
         </Input>
         {inputModePass === 'none' && <span className={styles.err_label}>Введите пароль.</span>}
-        {inputModePass === 'err' && <span className={styles.err_label}>Неверный логин или пароль. Повторите попытку, или нажмите "Забыли пароль?", чтобы сбросить его.</span>}
-        <div className={styles.recovery_link_container}>
-          <Link className={styles.recovery_link} to='/recovery'>Забыли пароль?</Link>
-        </div>
+        <Input
+          mode={(inputModePass2 === 'err' || inputModePass2 === 'none') ? 'err' : ''}
+          type='password' value={password2}
+          onChange={(e) => setPassword2(e.target.value)}
+          ref={password2Ref}>
+          Повторите пароль
+        </Input>
+        {inputModePass2 === 'none' && <span className={styles.err_label}>Повторите пароль.</span>}
+        {inputModePass2 === 'err' && <span className={styles.err_label}>Пароли не совпадают.</span>}
       </div>
       <div className={styles.btn_container}>
-        <Button mode={'on_primary'} onClick={() => navigate('/reg')}>Создать аккаунт</Button>
+        <Button mode={'on_primary'} onClick={() => navigate('/login')}>Назад</Button>
         <Button mode={'primary'} onClick={validateData}>Далее</Button>
       </div>
     </div>

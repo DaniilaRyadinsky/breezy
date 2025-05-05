@@ -1,0 +1,10 @@
+.main_page {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-primary);
+}
+
+.main_window {
+    display: flex;
+    flex-direction: row;
+}
+

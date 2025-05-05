@@ -1,0 +1,15 @@
+.topbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    background-color: var(--md-sys-color-primary-container);
+}
+
+
+.topbar_title {
+    color: var(--md-sys-color-on-surface);
+    font-size: 22px;
+    font-weight: normal;
+}

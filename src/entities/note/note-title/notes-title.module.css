@@ -1,0 +1,27 @@
+.title_container {
+    /* width: 100%; */
+    padding: 25px 48px 25px 48px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 25px;
+    margin-bottom: 54px;
+}
+
+
+.title {
+    width: 100%;
+    font-size: 57px;
+    line-height: 65px;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    border: none ;
+    color: var(--md-sys-color-on-surface);
+}
+
+.title:active {
+    color: red;
+}
+
+.title:focus {
+    outline: none;
+}

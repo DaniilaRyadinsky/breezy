@@ -1,0 +1,1 @@
+export {NotesText} from './notes-text'

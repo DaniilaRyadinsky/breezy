@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 import clsx from 'clsx';
 import styles from './Button.module.css'
 
-type IButton = {
+interface IButton {
     children: string,
     mode?: string,
     onClick: () => void,

@@ -1,15 +1,11 @@
-import React, { useRef, useState } from 'react'
-import { Button } from '../../shared/ui/Button'
-import { Input } from '../../shared/ui/InputLogin/Input'
 import { LoginForm } from '../../features/auth/index';
-import LoginWidget from '../../widgets/LoginWidget/LoginWidget';
+import { AuthContainer } from '../../shared/ui/AuthContainer/index';
 
 const LoginPage = () => {
   return (
     <div>
-        <LoginWidget/>
+      <AuthContainer title='Вход' description='Для перехода к Breezy Notes войдите в свой аккаунт Breezy'><LoginForm /></AuthContainer>
     </div>
-    
   )
 }
 

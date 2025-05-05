@@ -1,0 +1,8 @@
+.base_text {
+    width: 100%;
+    margin: 0;
+    line-height: 28px;
+    font-size: 16px;
+    letter-spacing: 0px;
+    color: var(--md-sys-color-on-surface);
+}

@@ -1,0 +1,15 @@
+.sidebar {
+    width: 300px;
+    height: 100vh;
+    /* background-color: var(--md-sys-color-primary); */
+}
+
+
+.list {
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* width: 100%; */
+}

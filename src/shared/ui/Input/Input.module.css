@@ -41,11 +41,29 @@
     transition: transform .15s cubic-bezier(.4, 0, .2, 1), font-size .15s cubic-bezier(.4, 0, .2, 1), z-index .15s  cubic-bezier(.4, 0, .2, 1);
     transform-origin: left center;
     user-select: none;
-    /* z-index: 2; */
+    z-index: 1;
 }
 
 .input_border {
     height: 54px;
+    border: 1px solid var(--md-sys-color-on-surface);
     border-radius: 4px;
     z-index: 1;
+}
+
+.focus_label {
+    transform: scale(0.75) translateY(-35px);
+    z-index: 2;
+}
+
+.focus_border {
+    border: 2px solid var(--md-sys-color-primary);
+}
+
+.err_label {
+    color: var(--md-sys-color-error);
+}
+
+.err_border {
+    border-color: var(--md-sys-color-error);
 }
