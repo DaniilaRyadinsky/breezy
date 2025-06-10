@@ -1,0 +1,25 @@
+.sidebar_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar_item_icon {
+    height: 24px;
+    padding: 4px 14px;
+    border-radius: 25px;
+    /* background-color: #000; */
+}
+
+.sidebar_item_icon_active {
+    background-color: var(--md-sys-color-secondary-container);
+}
+
+.sidebar_item_text {
+    color: var(--md-sys-color-outline);
+    font-size: 0.75rem;
+    line-height: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}

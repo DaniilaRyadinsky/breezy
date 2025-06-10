@@ -1,0 +1,31 @@
+.sidebar {
+    display: flex;
+    flex-direction: row;
+    width: 72px;
+    transition: width 0.3s;
+}
+
+.sidebar_visible {
+    width: 440px;
+}
+
+.left_container {
+    width: 72px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+}
+
+.sidebar_list {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 10px;
+    gap: 12px;
+}
+
+.sidebar_panel {
+    height: calc(100vh - 56px);
+    margin-left: 10px;
+    padding-right: 26px;
+}

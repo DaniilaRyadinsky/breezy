@@ -1,69 +1,21 @@
-import { StyleText } from '../../entities/note/base-text/base-text'
-import { NoteEditor } from '../../features/NoteEditor'
-import { INoteEditor } from '../../features/NoteEditor/NoteEditor'
-import { Sidebar } from '../../widgets/sidebar'
-import { notesList } from '../../widgets/sidebar/test/test'
+import { useState } from 'react'
+import { Sidebar } from '../../features/sidebar'
 import Topbar from '../../widgets/topbar/ui/topbar'
 import styles from './MainPage.module.css'
+import { NoteEditor } from '../../features/NoteEditor'
 
 const MainPage = () => {
+  const [selectNoteId, setSelectNoteId] = useState("")
+  const [sidebarMode, setSidebarMode] = useState(false)
 
-  const note: INoteEditor = {
-    blocks: [
-      {
-        id: '1',
-        content: [
-          {
-            id: '01',
-            style: StyleText.Normal,
-            text: 'это текстовый блок. '
-          },
-          {
-            id: '001',
-            style: StyleText.Bold,
-            text: 'это текстовый блок жирный'
-          }
-        ]
-      },
-      {
-        id: '1',
-        content: [
-          {
-            id: '01',
-            style: StyleText.Normal,
-            text: 'это текстовый блок'
-          }
-        ]
-      },
-      {
-        id: '2',
-        content: [
-          {
-            id: '02',
-            style: StyleText.Italic,
-            text: 'это текстовый блок'
-          }
-        ]
-      },
-      {
-        id: '3',
-        content: [
-          {
-            id: '03',
-            style: StyleText.Bold,
-            text: 'это текстовый блок'
-          }
-        ]
-      }
-    ]
-  }
+
 
   return (
     <div className={styles.main_page}>
-      <Topbar />
+      <Topbar filename={"Заметка 1"} clickMenu={()=> setSidebarMode(!sidebarMode)}/>
       <div className={styles.main_window}>
-        <Sidebar files={notesList} onSelectNote={(name: string) => console.log(name)} />
-        <NoteEditor {...note}/>
+        <Sidebar isVisible={sidebarMode} setIsVisible={setSidebarMode} selectedId={selectNoteId} onSelectNote={id => setSelectNoteId(id)} />
+        <NoteEditor selectedId={selectNoteId} sidebarMode={sidebarMode}/>
       </div>
 
     </div>

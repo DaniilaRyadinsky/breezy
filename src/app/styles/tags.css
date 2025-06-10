@@ -1,0 +1,18 @@
+:root {
+    --tag-red: rgb(255 219 209);
+    --on-tag-red: rgb(114 53 35);
+    --tag-yellow: rgb(248 226 135);
+    --on-tag-yellow: rgb(83 70 0);
+    --tag-light-green: rgb(205 237 163);
+    --on-tag-light-green: rgb(53 78 22);
+    --tag-green: rgb(219 232 181);
+    --on-tag-green: rgb(64 75 37);
+    --tag-teal: rgb(193 236 213);
+    --on-tag-teal: rgb(39 78 61);
+    --tag-violet: rgb(236 220 255);
+    --on-tag-violet: rgb(77 65 98);
+    --tag-blue: rgb(214 227 255);
+    --on-tag-blue: rgb(40 71 119);
+    --tag-gray: rgb(230 224 233);
+    --on-tag-gray: rgb(121 116 126);
+}

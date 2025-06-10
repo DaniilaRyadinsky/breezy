@@ -1,0 +1,10 @@
+.text_container {
+    padding: 12px 48px 0px 48px;
+    /* border: 1px solid var(--md-sys-color-outline-variant); */
+    /* border-radius: 25px; */
+}
+
+
+.text:focus {
+    outline: none;
+}

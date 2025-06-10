@@ -1,11 +1,14 @@
-import {NotesText,  INotesText } from '../../entities/note/note-text/notes-text'
+import clsx from 'clsx'
+import {NotesText,  INotesText } from './blocks/index'
 import styles from './NoteEditor.module.css'
+import TableContents from './ui/TableContents/TableContents'
 
 export interface INoteEditor {
-    blocks: INotesText[]
+    selectedId:string,
+    sidebarMode:boolean
 }
 
-export const NoteEditor = ({blocks}:INoteEditor) => {
+export const NoteEditor = ({selectedId, sidebarMode}:INoteEditor) => {
     // function parceBlocks(block) {
     //     if (block.type === 'text')
     //         return <NotesText
@@ -67,7 +70,10 @@ export const NoteEditor = ({blocks}:INoteEditor) => {
     // }
     
     return (
-        <div className={styles.note_editor}
+        <div className={styles.container}>
+            <div className={clsx([styles.note_editor],{
+            [styles.sidebar_mode]: sidebarMode}
+        )}
             data-content-editable-root="true"
             suppressContentEditableWarning={true}
             contentEditable
@@ -75,8 +81,12 @@ export const NoteEditor = ({blocks}:INoteEditor) => {
         >
             {/* <NotesTitle title={filename} setTitle={setFilename}/>
             {console.log(0.1 + 0.2 === 0.3)} */}
-            {blocks.map(block => <NotesText {...block}/>)}
+            {/* {blocks.map(block => <NotesText {...block}/>)} */}
+            <div className={styles.block}></div>
+        </div>
+        <TableContents/>          
 
         </div>
+        
     )
 }

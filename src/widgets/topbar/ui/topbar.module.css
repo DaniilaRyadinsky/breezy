@@ -1,15 +1,48 @@
 .topbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    height: 64px;
-    background-color: var(--md-sys-color-primary-container);
+    padding: 8px 24px;
+    /* position: fixed; */
 }
 
+.left_container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+    grid-column: 1;
+}
+
+.breezy_title {
+    margin: 0;
+    text-align: center;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-outline);
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+}
 
 .topbar_title {
-    color: var(--md-sys-color-on-surface);
-    font-size: 22px;
+    text-align: center;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
     font-weight: normal;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface);
+    grid-column: 2;
+    margin: 0;
+}
+
+.right_container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    grid-column: 3;
 }

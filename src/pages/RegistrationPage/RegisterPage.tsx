@@ -1,5 +1,4 @@
-import React from 'react'
-import { AuthContainer } from '../../shared/ui/AuthContainer'
+import { AuthContainer } from '../../features/auth/ui/AuthContainer'
 import { RegisterForm } from '../../features/auth'
 
 const RegisterPage = () => {

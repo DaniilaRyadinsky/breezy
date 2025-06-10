@@ -1,12 +1,26 @@
 html {
   font-size: 16px;
+  /* overflow: hidden; */
 }
 
 
 body {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  font-optical-sizing: auto;
   font-weight: normal;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline);
+  border-radius: 4px;
 }

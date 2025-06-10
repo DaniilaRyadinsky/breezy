@@ -1,5 +1,5 @@
 import { LoginForm } from '../../features/auth/index';
-import { AuthContainer } from '../../shared/ui/AuthContainer/index';
+import { AuthContainer } from '../../features/auth/ui/AuthContainer/index';
 
 const LoginPage = () => {
   return (

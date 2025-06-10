@@ -1,6 +1,7 @@
 .btn {
+    width: fit-content;
     height: 40px;
-    padding: 13px 24px 13px 24px;
+    padding: 10px 24px 10px 24px;
     margin: 0;
     border: none;
     border-radius: 20px;
@@ -27,4 +28,25 @@
 
 .on_primary:hover {
     background-color: var(--md-sys-color-primary-container);
+}
+
+
+.on_secondary_container {
+    color: var(--md-sys-color-secondary);
+    background-color: var(--md-sys-color-secondary-container);
+}
+
+.on_secondary_container:hover {
+    filter: brightness(92%);
+}
+
+.fab {
+    border-radius: 16px;
+    padding: 14px 14px 14px 14px;
+    width: 52px;
+    height: 52px;
+    background-color: var(--md-sys-color-tertiary-container);
+}
+.fab:hover {
+    filter: brightness(92%);
 }

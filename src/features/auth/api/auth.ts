@@ -26,11 +26,6 @@ async function fetchLogin({ username, password, onSuccess, onError }: AuthParams
   })
 }
 
-type IResponse = {
-  access_token?: string,
-  error?: string
-}
-
 async function fetchReg({ username, password, onSuccess, onError }: AuthParams) {
   fetch(`${BASE_URL}register`, {
     method: 'POST',

@@ -1,0 +1,29 @@
+.search_container {
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-between;
+    background-color: var(--md-sys-color-secondary-container);
+    padding: 10px 19px;
+    border-radius: 25px;
+    gap: 25px;
+}
+/* .search_container:hover {
+    background-color: var(--md-sys-color-surface-container-);
+} */
+
+.search_title {
+    display: inline;
+    font-size: 1rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    border: none;
+    background-color: transparent;
+}
+
+.search_title:focus {
+    outline: none;
+}
+
+.search_icon {
+
+}
