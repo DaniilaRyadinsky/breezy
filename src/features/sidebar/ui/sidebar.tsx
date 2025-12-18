@@ -77,7 +77,8 @@ export const Sidebar = ({onSelectNote, selectedId, isVisible, setIsVisible}: ISi
         </div>
       </div>
 
-      <div className={clsx({[styles.sidebar_panel]:isVisible})}>
+      <div className={clsx([styles.sidebar_panel],
+        {[styles.sidebar_panel_visible]:isVisible})}>
         {isVisible && mode === SideBarModes.Notes && <Notes onSelectNote={onSelectNote} selectedId={selectedId}/>}
         {/* {isVisible && mode === SideBarModes.Tags && <Tags onSelectNote={onSelectNote} selectedId={selectedId}/>} */}
         {isVisible && mode === SideBarModes.Archive && <Notes onSelectNote={onSelectNote} selectedId={selectedId}/>}

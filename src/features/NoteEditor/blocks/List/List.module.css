@@ -1,0 +1,18 @@
+.list_container {
+    display: flex;
+    flex-direction: row;
+    padding-top: 12px;
+    gap: 16px;
+}
+
+.text {
+    font-size: 1rem;
+    line-height: 1.75rem;
+    letter-spacing: 0px;
+}
+
+.list_sign {
+    font-size: 1rem;
+    line-height: 1.75rem;
+    letter-spacing: 0px;
+}

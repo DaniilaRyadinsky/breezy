@@ -1,5 +1,3 @@
-import React from 'react'
-
 const NotesCode = () => {
 const content = `async function fetchLogin() {
     setInputModeLog('')

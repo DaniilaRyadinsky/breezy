@@ -35,10 +35,10 @@ async function fetchReg({ username, password, onSuccess, onError }: AuthParams) 
     const result = await response.json();
     if (response.ok) {
       localStorage.setItem('access_token', result.access_token);
-      onSuccess
+      onSuccess()
     } else {
       console.log(result.error)
-      onError
+      onError()
     }
   })
 }

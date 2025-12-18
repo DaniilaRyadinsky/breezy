@@ -1,6 +1,7 @@
 .sidebar {
     display: flex;
     flex-direction: row;
+    /* gap: 10px; */
     width: 72px;
     transition: width 0.3s;
 }
@@ -26,6 +27,12 @@
 
 .sidebar_panel {
     height: calc(100vh - 56px);
-    margin-left: 10px;
     padding-right: 26px;
+    /* position: absolute; */
+    left: -500px;
+    transition: left 0.3;
+}
+
+.sidebar_panel_visible {
+    left: 72px;
 }

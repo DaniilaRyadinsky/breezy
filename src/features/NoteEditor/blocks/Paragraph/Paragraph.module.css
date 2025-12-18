@@ -1,7 +1,10 @@
-.text_container {
-    padding: 12px 48px 0px 48px;
+.text {
+    padding-top: 12px;
     /* border: 1px solid var(--md-sys-color-outline-variant); */
     /* border-radius: 25px; */
+    font-size: 1rem;
+    line-height: 1.75rem;
+    letter-spacing: 0px;
 }
 
 

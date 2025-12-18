@@ -1,0 +1,12 @@
+.title_container {
+    margin: 25px 48px;
+
+}
+
+.title {
+    font-size: 3.5625rem;
+    font-weight: normal;
+    line-height: 3.75rem;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface);
+}

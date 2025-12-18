@@ -1,18 +1,6 @@
-export enum StyleText {
-    Bold,
-    Normal,
-    Italic //стили не все
-}
+import { ITextSegment, StyleText } from "../../model/types";
 
-export interface IBaseText {
-    id: string,
-    style: StyleText,
-    text: string
-}
-
-
-
-const BaseText = ({id, style, text}: IBaseText) => {
+const TextSegment = ({style, text}: ITextSegment) => {
     const getStyle = () => {
         switch (style) {
             case StyleText.Bold:
@@ -26,8 +14,8 @@ const BaseText = ({id, style, text}: IBaseText) => {
     };
 
     return (
-        <span id={id} style={getStyle()}>{text}</span>
+        <span style={getStyle()}>{text}</span>
     )
 }
 
-export default BaseText
+export default TextSegment

@@ -8,9 +8,9 @@
 .note_editor {
     width: calc(100% - 72px - 188px - 120px - 100px);
     margin: 0px auto 20px auto;
-    height: calc(100% - 40px - 120px);
+    height: calc(100% - 20px - 30px - 60px);
     border-radius: 33px;
-    padding:60px 60px 60px 60px;
+    padding:30px 117px 60px 117px;
     background-color: var(--md-sys-color-surface-container-lowest);
     overflow-y: auto;
     scrollbar-gutter: stable;
