@@ -1,21 +1,14 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './App.css'
-import LoginPage from '../pages/LoginPage/LoginPage'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import RegisterPage from '../pages/RegistrationPage/RegisterPage'
-import MainPage from '../pages/MainPage/MainPage'
+import AppRouter from './routes/AppRouter'
+
+const queryClient = new QueryClient();
 
 function App() {
-
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/reg" element={<RegisterPage />} />
-        <Route path="*" element={<MainPage />} />
-        {/*<Route path="/recovery" element={<RecoveryPass1 />} /> */}
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AppRouter />
+    </QueryClientProvider>
   )
 }
 

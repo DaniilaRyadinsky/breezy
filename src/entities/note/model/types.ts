@@ -22,20 +22,33 @@ export interface ITextSegment {
 export interface IBaseBlock {
     id: string,
     type: BlockTypes,
-    content: ITextSegment[];
+    is_used: boolean,
+    note_id: string,
+    order: number,
+    created_at: number,
+    updated_at: number,
 }
 
 export interface IParagraph extends IBaseBlock {
     type: BlockTypes.Paragraph,
+    data: {
+        text: ITextSegment[]
+    }
 }
 
 export interface IQuote extends IBaseBlock {
     type: BlockTypes.Quote,
+    data: {
+        text: ITextSegment[]
+    }
 }
 
 export interface IHeader extends IBaseBlock {
     type: BlockTypes.Header,
     level: 1 | 2 | 3 | 4
+    data: {
+        text: ITextSegment[]
+    }
 }
 
 export enum ListModes {
@@ -52,3 +65,13 @@ export interface IList extends IBaseBlock {
 }
 
 export type Block = IParagraph | IHeader | IList | IQuote
+
+export type Note = {
+    id: string;
+    author: string,
+    title: string;
+    createdAt: number,
+    updatedAt: number,
+    tag: undefined,
+    blocks: Block[],
+}

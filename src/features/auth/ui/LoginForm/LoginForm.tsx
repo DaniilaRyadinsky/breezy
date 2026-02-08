@@ -1,58 +1,32 @@
-import React, { useState, useEffect, useRef, KeyboardEvent, useCallback } from 'react'
+import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../../../shared/ui/Button/index'
 import { Input } from '../../../../shared/ui/Input/index'
-import { fetchLogin } from '../../api/auth'
 import styles from './LoginForm.module.css'
+import { useEnterEffect } from '../../../../shared/lib/hooks/useEnterEffect'
+import { useAuth } from '../../lib/useAuth'
+
+
 
 export const LoginForm = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [inputModeLog, setInputModeLog] = useState('')
-  const [inputModePass, setInputModePass] = useState('')
-  const loginRef = useRef<HTMLInputElement>(null)
-  const passwordRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
-  const validateData = () => {
-    if (username === '') {
-      setInputModeLog('none')
-      loginRef.current?.focus()
-    }
-    else if (password === '') {
-      setInputModePass('none')
-      passwordRef.current?.focus()
-    }
-    else {
-      setInputModeLog('');
-      setInputModePass('');
-      fetchLogin({
-        username,
-        password,
-        onSuccess: () => navigate('/main'),
-        onError: () => {
-          setInputModeLog('err');
-          setInputModePass('err');
-        }
-      })
-    }
-  }
+  const {
+    login,
+    setLogin,
+    password,
+    setPassword,
+    loginErr,
+    passwordErr,
+    handleSubmit
+  } = useAuth('login');
 
-  useEffect(() => {
-    const handleKeyPress = (event: Event) => {
-      const keyEvent = event as unknown as KeyboardEvent
-      if (keyEvent.key === 'Enter') {
-        event.preventDefault()
-        validateData()
-      }
-    };
+  const loginRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
-    window.addEventListener('keydown', handleKeyPress);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [username, password]);
+
+  useEnterEffect(handleSubmit, login, password)
 
   return (
     <div className={styles.login_form}>
@@ -60,30 +34,28 @@ export const LoginForm = () => {
         <Input
           ref={loginRef}
           type='email'
-          mode={(inputModeLog === 'err' || inputModeLog === 'none') ? 'err' : ''}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}>
+          mode={loginErr ? 'err' : ''}
+          value={login}
+          onChange={(e) => setLogin(e.target.value)}>
           Телефон или адрес эл. почты
         </Input>
-        {/* {inputModeLog === 'err' && <span className={styles.err_label}>Не удалось найти аккаунт Breezy.</span>} */}
-        {inputModeLog === 'none' && <span className={styles.err_label}>Введите логин.</span>}
+        {loginErr && <span className={styles.err_label}>{loginErr}</span>}
         <Input
           ref={passwordRef}
           type='password'
-          mode={(inputModePass === 'err' || inputModePass === 'none') ? 'err' : ''}
+          mode={passwordErr ? 'err' : ''}
           value={password}
           onChange={(e) => setPassword(e.target.value)}>
           Пароль
         </Input>
-        {inputModePass === 'none' && <span className={styles.err_label}>Введите пароль.</span>}
-        {inputModePass === 'err' && <span className={styles.err_label}>Неверный логин или пароль. Повторите попытку, или нажмите "Забыли пароль?", чтобы сбросить его.</span>}
+        {passwordErr && <span className={styles.err_label}>{passwordErr}</span>}
         <div className={styles.recovery_link_container}>
           <Link className={styles.recovery_link} to='/recovery'>Забыли пароль?</Link>
         </div>
       </div>
       <div className={styles.btn_container}>
-        <Button mode={'on_primary'} onClick={() => navigate('/reg')}>Создать аккаунт</Button>
-        <Button mode={'primary'} onClick={validateData}>Далее</Button>
+        <Button mode={'on_primary'} onClick={() => navigate('/signup')}>Создать аккаунт</Button>
+        <Button mode={'primary'} onClick={() => handleSubmit()}>Далее</Button>
       </div>
     </div>
   )

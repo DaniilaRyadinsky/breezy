@@ -1,48 +1,64 @@
 import { BASE_URL } from '../../../shared/consts/index'
 
-interface AuthParams {
-  username: string;
-  password: string;
-  onSuccess: () => void;
-  onError: () => void;
-}
+export async function fetchAuth(
+  login: string,
+  password: string
+) {
+  let body;
+  if (login.includes("@")) {
+    body = JSON.stringify({ email: login, password })
+  }
+  else {
+    body = JSON.stringify({ login: login, password })
+  }
 
-
-
-async function fetchLogin({ username, password, onSuccess, onError }: AuthParams) {
-  fetch(`${BASE_URL}authentication`, {
+  return fetch(`${BASE_URL}auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  }).then((response) => response.json()).then((result) => {
-    if (result.access_token) {
-      localStorage.setItem('access_token', result.access_token);
-      onSuccess();
-    }
-    else {
-      console.log(result.error)
-      onError();
+    body: body
+  }).then((response) => {
+    switch (response.status) {
+      case 200:
+      case 204:
+        return;
+      case 400:
+        throw "неправильный запрос"
+      case 404:
+        throw "неправильный логин или пароль"
+      case 502:
+      case 504:
+        throw "Ошибка сервера"
     }
   })
+    .catch(e => {
+      throw new Error(e);
+    })
 }
 
-async function fetchReg({ username, password, onSuccess, onError }: AuthParams) {
-  fetch(`${BASE_URL}register`, {
+export async function fetchReg(
+  login: string,
+  email: string,
+  password: string
+) {
+  return fetch(`${BASE_URL}auth/reg`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  }).then(async (response) => {
-    const result = await response.json();
-    if (response.ok) {
-      localStorage.setItem('access_token', result.access_token);
-      onSuccess()
-    } else {
-      console.log(result.error)
-      onError()
+    body: JSON.stringify({ email, login: login, pw1: password, pw2: password })
+  }).then((response) => {
+    switch (response.status) {
+      case 200:
+      case 204:
+        return;
+      case 302:
+        throw "пользователь существует"
+      case 400:
+        throw "неправильный запрос"
+      case 502:
+      case 504:
+        throw "Ошибка сервера"
     }
   })
+    .catch(e => {
+      throw new Error(e);
+    })
 }
-
-
-
-export { fetchLogin,  fetchReg}

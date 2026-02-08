@@ -1,4 +1,4 @@
-import { ITextSegment, StyleText } from "../../model/types";
+import { ITextSegment, StyleText } from "../../../../entities/note/model/types";
 
 const TextSegment = ({style, text}: ITextSegment) => {
     const getStyle = () => {

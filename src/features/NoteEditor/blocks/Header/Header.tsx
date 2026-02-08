@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { IHeader } from '../../model/types'
+import { IHeader } from '../../../../entities/note/model/types'
 import TextSegment from '../TextSegment/TextSegment'
 import styles from './Header.module.css'
 

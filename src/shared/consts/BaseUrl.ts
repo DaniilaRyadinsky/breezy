@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://breezynotes.ru/api/'
+export const BASE_URL = 'http://localhost:8080/api/'

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { IBaseBlock, BlockTypes, Block } from '../../model/types'
+import { IBaseBlock, BlockTypes, Block } from '../../../../entities/note/model/types'
 import { Paragraph } from '../Paragraph/Paragraph';
 import List from '../List/List';
 import styles from './BaseBlock.module.css'
