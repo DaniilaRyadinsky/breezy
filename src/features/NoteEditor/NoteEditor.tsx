@@ -25,7 +25,7 @@ export const NoteEditor = ({ selectedId, sidebarMode }: INoteEditor) => {
                 contentEditable
             // onContextMenu={e=> {e.preventDefault()}}
             >
-                <MainTitle title='Заметка 1' />
+                <MainTitle/>
                 <div className={styles.block}>
                     {note?.blocks.map((item: Block) => <BaseBlock {...item} />)}
                 </div>

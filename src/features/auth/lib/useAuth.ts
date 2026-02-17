@@ -2,8 +2,10 @@ import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { fetchAuth, fetchReg } from "../api/auth"
 import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "./authStore"
 
 type AuthMode = "login" | "registration"
+
 
 export const useAuth = (mode: AuthMode) => {
     const [login, setLogin] = useState('')
@@ -17,6 +19,7 @@ export const useAuth = (mode: AuthMode) => {
     const [confirmPasswordErr, setConfirmPasswordErr] = useState('')
 
     const navigate = useNavigate()
+    const { setAuth } = useAuthStore()
 
     const authMutation = useMutation({
         mutationFn: ({ email, login, password }: {
@@ -34,6 +37,7 @@ export const useAuth = (mode: AuthMode) => {
                     password)
         ,
         onSuccess: () => {
+            setAuth();
             navigate('/main');
         },
         onError: (e) => {

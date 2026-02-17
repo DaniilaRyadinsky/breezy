@@ -194,7 +194,7 @@ const initialNote: Note = {
 }
 
 interface NoteState {
-  note: Note | null; // Заметка может быть не загружена, поэтому null
+  note: Note 
 }
 
 export const useNoteStore = create<NoteState>((set) => ({

@@ -12,7 +12,7 @@ interface IList {
 const List = ({list, selectedId, onSelectNote}: IList) => {
   return (
     <div className={styles.list}>
-      {list.map(item => <ListItem {...item} isSelected={selectedId=== item.id ? true: false} onSelectNote={onSelectNote} />)}
+      {list?.map(item => <ListItem {...item} isSelected={selectedId=== item.id ? true: false} onSelectNote={onSelectNote} />)}
     </div>
   )
 }
