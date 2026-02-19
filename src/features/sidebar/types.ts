@@ -2,11 +2,9 @@ import { TagColor } from "./ui/Tag";
 
 export type NoteInfo = {
   id: string,
-  name: string,
-  description: string,
-  date_changed: string,
-  tag_color: TagColor| null,
-  tag_text: string,
-  // isSelected: boolean,
+  title: string,
+  first_block: string,
+  updated_at: string,
+
 }
 

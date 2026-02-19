@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { fetchAuth, fetchReg } from "../api/auth"
 import { useNavigate } from "react-router-dom"
-import { useAuthStore } from "./authStore"
+import { useAuthStore } from "../../../entities/user/lib/authStore"
 
 type AuthMode = "login" | "registration"
 

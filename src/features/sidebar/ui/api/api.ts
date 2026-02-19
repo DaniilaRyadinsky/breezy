@@ -1,15 +1,7 @@
-import { BASE_URL } from "../../../../shared/consts";
-import { useAuthStore } from "../../../auth/lib/authStore";
 
-export const fetchNoteList = async (
+import { apiFetch } from "../../../../shared/api";
+import { NoteInfo } from "../../types";
 
-) => {
-  const { setGuest } = useAuthStore()
-  const response = await fetch(`${BASE_URL}note/all`);
-
-  if (response.status == 401)
-    setGuest();
-  if (!response.ok) throw new Error();
-  
-  return await response.json();
+export const fetchNoteList = async () => {
+  return apiFetch<NoteInfo[]>('note/all?start=0&end=4')
 }

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../../features/auth/lib/authStore";
+import { useAuthStore } from "../../../entities/user/lib/authStore";
 import { useEffect } from "react";
 
 export const useProtectedRoute = () => {

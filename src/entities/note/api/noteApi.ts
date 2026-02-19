@@ -1,4 +1,4 @@
-import { useAuthStore } from "../../../features/auth/lib/authStore";
+import { useAuthStore } from "../../user/lib/authStore";
 import { BASE_URL } from "../../../shared/consts"
 
 export const createNote = async (title: string) => {

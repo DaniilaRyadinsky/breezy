@@ -193,6 +193,8 @@ const initialNote: Note = {
             }]
 }
 
+ 
+
 interface NoteState {
   note: Note 
 }

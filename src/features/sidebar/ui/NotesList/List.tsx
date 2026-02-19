@@ -6,7 +6,7 @@ import styles from './List.module.css'
 interface IList {
   selectedId: string,
   onSelectNote: (id: string) => void,
-  list: NoteInfo[]
+  list: NoteInfo[] | undefined
 }
 
 const List = ({list, selectedId, onSelectNote}: IList) => {
