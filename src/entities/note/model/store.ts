@@ -4,9 +4,11 @@ import { BlockTypes, StyleText, ListModes, Note } from './types'
 const initialNote: Note = {
     id: "1",
     author: "1",
+    editors: [],
+    readers: [],
     title: "1",
-    createdAt: 1,
-    updatedAt: 1,
+    created_at: 1,
+    updated_at: 1,
     tag: undefined,
     blocks:
         [
@@ -193,14 +195,19 @@ const initialNote: Note = {
             }]
 }
 
- 
 
-interface NoteState {
-  note: Note 
+
+interface ActiveNoteNoteState {
+    activeNote: Note | null,
+
+    selectNote : (note: Note) => void,
+    clearNote: () => void,
 }
 
-export const useNoteStore = create<NoteState>((set) => ({
-    note: initialNote
+export const useAciveNoteStore = create<ActiveNoteNoteState>((set) => ({
+    activeNote: null,
 
-    
+    selectNote: (note) => set({ activeNote: note }),
+    clearNote: () => set({activeNote: null})
+
 }))

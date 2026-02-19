@@ -5,6 +5,7 @@ export type NoteInfo = {
   title: string,
   first_block: string,
   updated_at: string,
-
+  role: string,
+  tag: undefined,
 }
 

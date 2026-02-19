@@ -67,11 +67,13 @@ export interface IList extends IBaseBlock {
 export type Block = IParagraph | IHeader | IList | IQuote
 
 export type Note = {
-    id: string;
+    id: null | string;
     author: string,
+    editors: string[],
+    readers: string[],
     title: string;
-    createdAt: number,
-    updatedAt: number,
+    created_at: number,
+    updated_at: number,
     tag: undefined,
     blocks: Block[],
 }
