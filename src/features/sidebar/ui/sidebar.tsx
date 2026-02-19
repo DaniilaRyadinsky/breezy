@@ -9,20 +9,22 @@ import { TagsIcon } from '../../../shared/ui/icons/TagsIcon'
 import { ArchiveIcon } from '../../../shared/ui/icons/ArchiveIcon'
 import { BasketIcon } from '../../../shared/ui/icons/BasketIcon'
 import { PenIcon } from '../../../shared/ui/icons/PenIcon'
+import { useActiveNoteStore } from '../../../entities/note/model/store'
 
 interface ISideBar {
   isVisible: boolean;
-  setIsVisible: (isVisible: boolean) => void,
-  onSelectNote: (name: string) => void
+  setIsVisible: (isVisible: boolean) => void
 }
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 
-export const Sidebar = ({ onSelectNote, isVisible, setIsVisible }: ISideBar) => {
+export const Sidebar = ({ isVisible, setIsVisible }: ISideBar) => {
   const [mode, setMode] = useState<sidebarModes>('notes')
 
-  const handleCreateClick = () => {
+  const { clearNote } = useActiveNoteStore((state) => state)
 
+  const handleCreateClick = () => {
+    clearNote();
   }
 
   const handleChangeModeClick = (mode: sidebarModes) => {
@@ -35,8 +37,8 @@ export const Sidebar = ({ onSelectNote, isVisible, setIsVisible }: ISideBar) => 
       [styles.sidebar_visible]: isVisible
     })} >
       <div className={styles.left_container}>
-        
-        <Button mode='fab' onClick={() => console.log("click")}>
+
+        <Button mode='fab' onClick={() => handleCreateClick()}>
           <PenIcon />
         </Button>
 

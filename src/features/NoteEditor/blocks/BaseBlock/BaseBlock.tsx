@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom';
-import { IBaseBlock, BlockTypes, Block } from '../../../../entities/note/model/types'
 import { Paragraph } from '../Paragraph/Paragraph';
 import List from '../List/List';
 import styles from './BaseBlock.module.css'
 import Header from '../Header/Header';
+import { Block, BlockTypes } from '../../../../entities/note/model/blockTypes';
 
 const BaseBlock = (props: Block) => {
     function GiveBlock() {

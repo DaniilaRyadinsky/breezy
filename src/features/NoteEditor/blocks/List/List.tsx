@@ -1,4 +1,4 @@
-import { IList, ListModes } from '../../../../entities/note/model/types'
+import { IList, ListModes } from '../../../../entities/note/model/blockTypes';
 import TextSegment from '../TextSegment/TextSegment'
 import styles from './List.module.css'
 

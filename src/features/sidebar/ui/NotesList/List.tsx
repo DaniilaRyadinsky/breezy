@@ -1,18 +1,16 @@
 import { ListItem } from './ListItem'
-import { NoteInfo } from '../../types'
 import styles from './List.module.css'
+import { NoteInfo } from '../../../../entities/note/model/noteTypes'
 
 
 interface IList {
-  selectedId: string,
-  onSelectNote: (id: string) => void,
   list: NoteInfo[] | undefined
 }
 
-const List = ({list, selectedId, onSelectNote}: IList) => {
+const List = ({list}: IList) => {
   return (
     <div className={styles.list}>
-      {list?.map(item => <ListItem {...item} isSelected={selectedId=== item.id ? true: false} onSelectNote={onSelectNote} />)}
+      {list?.map(item => <ListItem item={item} />)}
     </div>
   )
 }

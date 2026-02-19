@@ -1,4 +1,4 @@
-import { NoteInfo } from "../types"
+import { NoteInfo } from "../../../entities/note/model/noteTypes"
 import { TagColor } from "../ui/Tag"
 
 

@@ -1,5 +1,5 @@
 import styles from './Paragraph.module.css'
-import { IParagraph } from '../../../../entities/note/model/types'
+import { IParagraph } from '../../../../entities/note/model/noteTypes'
 import TextSegment from '../TextSegment/TextSegment'
 
 

@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react'
 import styles from './MainTitle.module.css'
-import { useNoteStore } from '../../../entities/note/model/store';
+import { useActiveNoteStore } from '../../../entities/note/model/store';
+
 
 
 const MainTitle = () => {
-  const {note} = useNoteStore((state) => state);
+  const {activeNote} = useActiveNoteStore((state) => state);
   const [titleState, setTitleState] = useState('');
 
   useEffect(()=>{
-    if (note) {
-      setTitleState(note.title)
+    if (activeNote) {
+      setTitleState(activeNote.title)
     }
-  }, [note])
+  }, [activeNote])
 
   const handleAddNote = () => {
-    if (!note) {
-      
+    if (!activeNote) {
+
     }
   }
 

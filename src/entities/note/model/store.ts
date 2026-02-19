@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { BlockTypes, StyleText, ListModes, Note } from './types'
+import { BlockTypes, StyleText } from './blockTypes'
+import { Note } from './noteTypes'
 
 const initialNote: Note = {
     id: "1",
@@ -9,7 +10,12 @@ const initialNote: Note = {
     title: "1",
     created_at: 1,
     updated_at: 1,
-    tag: undefined,
+    tag: {
+        id: "de120754-a5db-46c2-81f0-32d399ab8673",
+        title: "tilted",
+        color: "red",
+        emoji: "😖"
+    },
     blocks:
         [
             {
@@ -200,14 +206,14 @@ const initialNote: Note = {
 interface ActiveNoteNoteState {
     activeNote: Note | null,
 
-    selectNote : (note: Note) => void,
+    selectNote: (note: Note) => void,
     clearNote: () => void,
 }
 
-export const useAciveNoteStore = create<ActiveNoteNoteState>((set) => ({
+export const useActiveNoteStore = create<ActiveNoteNoteState>((set) => ({
     activeNote: null,
 
     selectNote: (note) => set({ activeNote: note }),
-    clearNote: () => set({activeNote: null})
+    clearNote: () => set({ activeNote: null })
 
 }))

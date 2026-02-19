@@ -1,18 +1,17 @@
 import clsx from 'clsx'
 import styles from './NoteEditor.module.css'
 import TableContents from './ui/TableContents/TableContents'
-import { Block, BlockTypes, ListModes, StyleText } from '../../entities/note/model/types'
 import BaseBlock from './blocks/BaseBlock/BaseBlock'
 import MainTitle from './MainTitle/MainTitle'
-import { useNoteStore } from '../../entities/note/model/store'
+import { useActiveNoteStore } from '../../entities/note/model/store'
+import { Block } from '../../entities/note/model/blockTypes'
 
 export interface INoteEditor {
-    selectedId: string,
     sidebarMode: boolean
 }
 
-export const NoteEditor = ({ selectedId, sidebarMode }: INoteEditor) => {
-    const { note } = useNoteStore((state) => state)
+export const NoteEditor = ({ sidebarMode }: INoteEditor) => {
+    const { activeNote } = useActiveNoteStore((state) => state)
 
     return (
         <div className={styles.container}>
@@ -27,7 +26,7 @@ export const NoteEditor = ({ selectedId, sidebarMode }: INoteEditor) => {
             >
                 <MainTitle/>
                 <div className={styles.block}>
-                    {note?.blocks.map((item: Block) => <BaseBlock {...item} />)}
+                    {activeNote?.blocks.map((item: Block) => <BaseBlock {...item} />)}
                 </div>
             </div>
             <TableContents />

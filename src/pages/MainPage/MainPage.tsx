@@ -5,7 +5,6 @@ import styles from './MainPage.module.css'
 import { NoteEditor } from '../../features/NoteEditor'
 
 const MainPage = () => {
-  const [selectNoteId, setSelectNoteId] = useState("")
   const [sidebarMode, setSidebarMode] = useState(false)
 
   return (
@@ -13,7 +12,7 @@ const MainPage = () => {
       <Topbar filename={"Заметка 1"} clickMenu={()=> setSidebarMode(!sidebarMode)}/>
       <div className={styles.main_window}>
         <Sidebar isVisible={sidebarMode} setIsVisible={setSidebarMode} />
-        <NoteEditor selectedId={selectNoteId} sidebarMode={sidebarMode}/>
+        <NoteEditor sidebarMode={sidebarMode}/>
       </div>
 
     </div>

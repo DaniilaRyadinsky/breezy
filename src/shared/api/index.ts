@@ -4,7 +4,10 @@ import { useAuthStore } from '../../entities/user/lib/authStore';
 
 
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}) : Promise<T> {
-  return fetch(`${BASE_URL}${endpoint}`, {...options, credentials: 'include'})
+  return fetch(`${BASE_URL}${endpoint}`, 
+    {...options, 
+      credentials: 'include', 
+      headers: { 'Content-Type': 'application/json' }})
     .then(response => {
       if (!response.ok) {
         throw new HttpError(response.status, 'Response not OK');
