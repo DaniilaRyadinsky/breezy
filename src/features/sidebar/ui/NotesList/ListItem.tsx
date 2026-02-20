@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { getNote } from '../../../../entities/note/api/noteApi';
-import { Note, NoteInfo } from '../../../../entities/note/model/noteTypes';
+import { NoteInfo } from '../../../../entities/note/model/noteTypes';
 import { useActiveNoteStore } from '../../../../entities/note/model/store';
-import { Tag, TagColor, } from '../Tag';
+// import { Tag, TagColor, } from '../Tag';
 import styles from './List.module.css'
 
 
@@ -15,41 +15,17 @@ export const ListItem = ({ item }: IListItem) => {
   const { activeNote, selectNote } = useActiveNoteStore((store) => store);
   const isSelected = activeNote?.id === item.id;
 
-  const { refetch: fetchAndSelectNote, data: fullNoteData } = useQuery<Note>({
-    queryKey: ['note', item.id],
-    queryFn: () => getNote(item.id!),
-    enabled: false,
-    refetchOnWindowFocus: false,
-  });
+  const queryClient = useQueryClient()  
 
-
-  // const queryClient = useQueryClient()
-  // const { activeNote, selectNote } = useActiveNoteStore()
-
-  // const isSelected = activeNote?.id === item.id
-
-  // const onClick = async () => {
-  //   const data = await queryClient.fetchQuery({
-  //     queryKey: ['note', item.id],
-  //     queryFn: () => getNote(item.id!),
-  //   })
-  //   selectNote(data)
-  // }
-
-  // const onMouseEnter = () => {
-  //   queryClient.prefetchQuery({
-  //     queryKey: ['note', item.id],
-  //     queryFn: () => getNote(item.id!),
-  //     staleTime: 30_000,
-  //   })
-  // }
-
-  function Click() {
-    fetchAndSelectNote();
-    if (fullNoteData) {
-      selectNote(fullNoteData);
-    }
+  const onClick = async () => {
+    const data = await queryClient.fetchQuery({
+      queryKey: ['note', item.id],
+      queryFn: () => getNote(item.id!),
+    })
+    selectNote(data)
   }
+
+
 
   const styleSelected = {
     backgroundColor: isSelected ? 'var(--md-sys-color-surface-container-highest)' : '',
@@ -58,7 +34,7 @@ export const ListItem = ({ item }: IListItem) => {
 
   return (
     <li className={styles.item} >
-      <div className={styles.item_container} onClick={() => Click()} style={styleSelected}>
+      <div className={styles.item_container} onClick={() => onClick()} style={styleSelected}>
         <div className={styles.item_title_container}>
           <h3 className={styles.item_title}>{item.title}</h3>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
