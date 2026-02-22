@@ -11,7 +11,7 @@ export interface INoteEditor {
 }
 
 export const NoteEditor = ({ sidebarMode }: INoteEditor) => {
-    const { activeNote } = useActiveNoteStore((state) => state)
+    const activeNote = useActiveNoteStore((state) => state.activeNote)
 
     return (
         <div className={styles.container}>
@@ -26,7 +26,7 @@ export const NoteEditor = ({ sidebarMode }: INoteEditor) => {
             >
                 <MainTitle/>
                 <div className={styles.block}>
-                    {activeNote?.blocks.map((item: Block) => <BaseBlock {...item} />)}
+                    {activeNote?.blocks?.map((item: Block) => <BaseBlock {...item} />)}
                 </div>
             </div>
             <TableContents />

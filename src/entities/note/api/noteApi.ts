@@ -1,14 +1,14 @@
 import { apiFetch } from "../../../shared/api";
 import { Note, NoteInfo } from "../model/noteTypes";
 
-export const createNote = async (title: string) => {
-  return apiFetch(`note`, {
+export const createNoteApi = async (title: string) => {
+  return apiFetch<{id: string}>(`note`, {
     method: "POST",
     body: JSON.stringify({ title })
   });
 }
 
-export const getNote = async (id: string) => {
+export const getNoteApi = async (id: string) => {
   return apiFetch<Note>(`note?id=${id}`, {
     method: "GET"
   })
@@ -28,8 +28,8 @@ export const getNoteListByTag = async (id: string, start = 0, end = 10) => {
     .then((res) => res.items)
 }
 
-export const patchTitle = async (title: string, note_id: string) => {
-  return apiFetch('note/title', {
+export const patchTitleApi = async (title: string, note_id: string) => {
+  return apiFetch<void>('note/title', {
     method: "PATCH",
     body: JSON.stringify({ title, note_id })
   })

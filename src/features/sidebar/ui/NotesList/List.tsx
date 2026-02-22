@@ -10,7 +10,7 @@ interface IList {
 const List = ({list}: IList) => {
   return (
     <div className={styles.list}>
-      {list?.map(item => <ListItem item={item} />)}
+      {list?.map(item => <ListItem item={item} key={item.id}/>)}
     </div>
   )
 }

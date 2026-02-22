@@ -9,7 +9,7 @@ interface AuthStore {
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  status: 'guest',
+  status: 'unknown',
   setAuth: () => { console.log('auth'); set({ status: 'auth' }) },
   setGuest: () => {
     console.log('setGuest called')

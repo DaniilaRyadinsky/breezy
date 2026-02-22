@@ -3,6 +3,7 @@ import { useState } from "react"
 import { fetchAuth, fetchReg } from "../api/auth"
 import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../../entities/user/lib/authStore"
+import { HttpError } from "../../../shared/api/HttpError"
 
 type AuthMode = "login" | "registration"
 
@@ -19,7 +20,7 @@ export const useAuth = (mode: AuthMode) => {
     const [confirmPasswordErr, setConfirmPasswordErr] = useState('')
 
     const navigate = useNavigate()
-    const { setAuth } = useAuthStore()
+    const setAuth = useAuthStore(s => s.setAuth)
 
     const authMutation = useMutation({
         mutationFn: ({ email, login, password }: {
@@ -40,8 +41,21 @@ export const useAuth = (mode: AuthMode) => {
             setAuth();
             navigate('/main');
         },
-        onError: (e) => {
-            setPasswordErr(e.message)
+        onError: (e: HttpError) => {
+            switch (e.status) {
+                case 302:
+                    setPasswordErr("пользователь существует");
+                    return;
+                case 400:
+                    setPasswordErr("неправильный запрос");
+                    return;
+                case 404:
+                    setPasswordErr("неправильный логин или пароль");
+                    return;
+                case 502:
+                case 504:
+                    setPasswordErr("Ошибка сервера");
+            }
         }
     })
 
@@ -76,7 +90,8 @@ export const useAuth = (mode: AuthMode) => {
         return true;
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (!validateData()) return;
 
         authMutation.mutate({

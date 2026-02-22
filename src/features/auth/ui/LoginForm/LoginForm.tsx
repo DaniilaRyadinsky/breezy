@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../../../shared/ui/Button/index'
 import { Input } from '../../../../shared/ui/Input/index'
 import styles from './LoginForm.module.css'
-import { useEnterEffect } from '../../../../shared/lib/hooks/useEnterEffect'
 import { useAuth } from '../../lib/useAuth'
 
 
@@ -25,15 +24,12 @@ export const LoginForm = () => {
   const passwordRef = useRef<HTMLInputElement>(null)
 
 
-
-  useEnterEffect(handleSubmit, login, password)
-
   return (
-    <div className={styles.login_form}>
+    <form className={styles.login_form} onSubmit={handleSubmit}>
       <div>
         <Input
           ref={loginRef}
-          type='email'
+          type='text'
           mode={loginErr ? 'err' : ''}
           value={login}
           onChange={(e) => setLogin(e.target.value)}>
@@ -54,9 +50,9 @@ export const LoginForm = () => {
         </div>
       </div>
       <div className={styles.btn_container}>
-        <Button mode={'on_primary'} onClick={() => navigate('/signup')}>Создать аккаунт</Button>
-        <Button mode={'primary'} onClick={() => handleSubmit()}>Далее</Button>
+        <Button mode={'on_primary'} type='button' onClick={() => navigate('/signup')}>Создать аккаунт</Button>
+        <Button mode={'primary'} type={'submit'} >Далее</Button>
       </div>
-    </div>
+    </form>
   )
 }

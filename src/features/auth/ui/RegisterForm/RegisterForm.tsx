@@ -4,7 +4,7 @@ import { Input } from '../../../../shared/ui/Input'
 import { Button } from '../../../../shared/ui/Button'
 import styles from './RegisterForm.module.css'
 import { useAuth } from '../../lib/useAuth'
-import { useEnterEffect } from '../../../../shared/lib/hooks/useEnterEffect'
+
 
 export const RegisterForm = () => {
 
@@ -30,12 +30,8 @@ export const RegisterForm = () => {
   const passwordRef = useRef<HTMLInputElement>(null)
   const password2Ref = useRef<HTMLInputElement>(null)
 
-
-  useEnterEffect(handleSubmit, login, password, confirmPassword)
-
-
   return (
-    <div className={styles.login_form}>
+    <form className={styles.login_form} onSubmit={handleSubmit}>
       <div>
         <Input
           mode={emailErr ? 'err' : ''}
@@ -47,10 +43,10 @@ export const RegisterForm = () => {
         {emailErr  && <span className={styles.err_label}>{emailErr}</span>}
         <Input
           mode={loginErr ? 'err' : ''}
-          type='email' value={login}
+          type='text' value={login}
           onChange={(e) => setLogin(e.target.value)}
           ref={loginRef}>
-          Телефон или адрес эл. почты
+          имя пользователя
         </Input>
         {loginErr  && <span className={styles.err_label}>{loginErr}</span>}
         <Input
@@ -71,9 +67,9 @@ export const RegisterForm = () => {
         {confirmPasswordErr && <span className={styles.err_label}>{confirmPasswordErr}</span>}
       </div>
       <div className={styles.btn_container}>
-        <Button mode={'on_primary'} onClick={() => navigate('/signin')}>Назад</Button>
-        <Button mode={'primary'} onClick={() => handleSubmit()}>Далее</Button>
+        <Button mode={'on_primary'} type='button' onClick={() => navigate('/signin')}>Назад</Button>
+        <Button mode={'primary'} type='submit'>Далее</Button>
       </div>
-    </div>
+    </form>
   )
 }

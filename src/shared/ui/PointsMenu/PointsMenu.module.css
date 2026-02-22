@@ -1,0 +1,18 @@
+.container {
+  position: relative;
+}
+
+.options {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  height: fit-content;
+  background-color: #fff;
+  z-index: 50;
+  bottom: 50px;
+}
+
+.op {
+  padding: 5px;
+}

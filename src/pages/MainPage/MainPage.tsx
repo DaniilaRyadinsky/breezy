@@ -9,7 +9,7 @@ const MainPage = () => {
 
   return (
     <div className={styles.main_page}>
-      <Topbar filename={"Заметка 1"} clickMenu={()=> setSidebarMode(!sidebarMode)}/>
+      <Topbar clickMenu={()=> setSidebarMode(!sidebarMode)}/>
       <div className={styles.main_window}>
         <Sidebar isVisible={sidebarMode} setIsVisible={setSidebarMode} />
         <NoteEditor sidebarMode={sidebarMode}/>

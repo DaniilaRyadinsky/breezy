@@ -1,6 +1,6 @@
 import styles from './sidebar.module.css'
 import { Button } from '../../../shared/ui/Button'
-import SidebarItem from '../../../shared/ui/sidebarItem/SidebarItem'
+import SidebarItem from './sidebarItem/SidebarItem'
 import { useState } from 'react'
 import Notes from './Panels/Notes'
 import clsx from 'clsx'
@@ -21,10 +21,12 @@ type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 export const Sidebar = ({ isVisible, setIsVisible }: ISideBar) => {
   const [mode, setMode] = useState<sidebarModes>('notes')
 
-  const { clearNote } = useActiveNoteStore((state) => state)
+  const clearNote = useActiveNoteStore((state) => state.clearNote)
 
   const handleCreateClick = () => {
     clearNote();
+  
+    console.log("создана новая заметка")
   }
 
   const handleChangeModeClick = (mode: sidebarModes) => {

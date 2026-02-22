@@ -3,11 +3,16 @@ import { BASE_URL } from '../consts/BaseUrl';
 import { useAuthStore } from '../../entities/user/lib/authStore';
 
 
-export async function apiFetch<T>(endpoint: string, options: RequestInit = {}) : Promise<T> {
-  return fetch(`${BASE_URL}${endpoint}`, 
-    {...options, 
-      credentials: 'include', 
-      headers: { 'Content-Type': 'application/json' }})
+export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  return fetch(`${BASE_URL}${endpoint}`,
+    {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      }
+    })
     .then(response => {
       if (!response.ok) {
         throw new HttpError(response.status, 'Response not OK');
@@ -21,7 +26,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}) :
       if (e.status == 401) {
         useAuthStore.getState().setGuest();
       }
-      return Promise.reject(e)
+      throw e;
     })
 
 }
