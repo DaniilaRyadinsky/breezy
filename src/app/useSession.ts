@@ -1,11 +1,11 @@
-import { useAuthStore } from "../entities/user/lib/authStore"
+import { userStore } from "../entities/user/lib/userStore"
 import { validateTokens } from "../features/auth/api/auth"
 import { useEffect } from "react"
 
 export function useSession() {
-  const setAuth = useAuthStore((s) => s.setAuth)
-  const setGuest = useAuthStore((s) => s.setGuest)
-  const status = useAuthStore((s) => s.status)
+  const setAuth = userStore((s) => s.setAuth)
+  const removeUser = userStore((s) => s.removeUser)
+  const status = userStore((s) => s.status)
 
   useEffect(() => {
 
@@ -13,6 +13,6 @@ export function useSession() {
 
     validateTokens()
       .then(() => setAuth())
-      .catch(() => setGuest())
+      .catch(() => removeUser())
   }, [status])
 }

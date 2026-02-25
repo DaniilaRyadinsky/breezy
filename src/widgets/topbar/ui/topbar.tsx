@@ -1,20 +1,19 @@
+import { useAppStore } from '../../../app/lib/AppStore'
 import { useActiveNoteStore } from '../../../entities/note/model/store'
 import { Button } from '../../../shared/ui/Button'
 import Burger from './burger'
 import styles from './topbar.module.css'
 import UserMenu from './user-menu'
 
-interface ITopbar {
-  clickMenu: ()=> void
-}
 
-const Topbar = ({clickMenu}: ITopbar) => {
+const Topbar = () => {
   const activeNote = useActiveNoteStore(state => state.activeNote)
+  const setSidebar = useAppStore(s=> s.setSidebar)
 
   return (
     <div className={styles.topbar}>
       <div className={styles.left_container}>
-        <Burger onClick={clickMenu}/>
+        <Burger onClick={setSidebar}/>
         <h1 className={styles.breezy_title}>Breezy</h1>
       </div>
       <h1 className={styles.topbar_title}>{activeNote?.title}</h1>

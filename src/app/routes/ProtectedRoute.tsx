@@ -1,9 +1,9 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../entities/user/lib/authStore';
+import { userStore } from '../../entities/user/lib/userStore';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const status = useAuthStore((state) => state.status);
+  const status = userStore((state) => state.status);
   const location = useLocation();
 
   if (status === 'unknown') {

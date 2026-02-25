@@ -2,8 +2,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { fetchAuth, fetchReg } from "../api/auth"
 import { useNavigate } from "react-router-dom"
-import { useAuthStore } from "../../../entities/user/lib/authStore"
 import { HttpError } from "../../../shared/api/HttpError"
+import { userStore } from "../../../entities/user/lib/userStore"
 
 type AuthMode = "login" | "registration"
 
@@ -20,7 +20,7 @@ export const useAuth = (mode: AuthMode) => {
     const [confirmPasswordErr, setConfirmPasswordErr] = useState('')
 
     const navigate = useNavigate()
-    const setAuth = useAuthStore(s => s.setAuth)
+    const setUser = userStore(s => s.setUser)
 
     const authMutation = useMutation({
         mutationFn: ({ email, login, password }: {
@@ -37,8 +37,8 @@ export const useAuth = (mode: AuthMode) => {
                     email,
                     password)
         ,
-        onSuccess: () => {
-            setAuth();
+        onSuccess: (data) => {
+            setUser(data.metadata);
             navigate('/main');
         },
         onError: (e: HttpError) => {

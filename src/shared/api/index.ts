@@ -1,6 +1,6 @@
 import { HttpError } from './HttpError';
 import { BASE_URL } from '../consts/BaseUrl';
-import { useAuthStore } from '../../entities/user/lib/authStore';
+import { userStore } from '../../entities/user/lib/userStore';
 
 
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -24,7 +24,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     })
     .catch(e => {
       if (e.status == 401) {
-        useAuthStore.getState().setGuest();
+        userStore.getState().setGuest();
       }
       throw e;
     })

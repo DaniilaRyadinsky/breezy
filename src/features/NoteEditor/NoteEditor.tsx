@@ -5,18 +5,17 @@ import BaseBlock from './blocks/BaseBlock/BaseBlock'
 import MainTitle from './MainTitle/MainTitle'
 import { useActiveNoteStore } from '../../entities/note/model/store'
 import { Block } from '../../entities/note/model/blockTypes'
+import { useAppStore } from '../../app/lib/AppStore'
 
-export interface INoteEditor {
-    sidebarMode: boolean
-}
 
-export const NoteEditor = ({ sidebarMode }: INoteEditor) => {
-    const activeNote = useActiveNoteStore((state) => state.activeNote)
+export const NoteEditor = () => {
+    const activeNote = useActiveNoteStore((state) => state.activeNote);
+    const isSidebarOpen = useAppStore(s => s.isSidebarOpen);
 
     return (
         <div className={styles.container}>
             <div className={clsx([styles.note_editor], {
-                [styles.sidebar_mode]: sidebarMode
+                [styles.sidebar_mode]: isSidebarOpen
             }
             )}
                 data-content-editable-root="true"
@@ -24,7 +23,7 @@ export const NoteEditor = ({ sidebarMode }: INoteEditor) => {
                 contentEditable
             // onContextMenu={e=> {e.preventDefault()}}
             >
-                <MainTitle/>
+                <MainTitle />
                 <div className={styles.block}>
                     {activeNote?.blocks?.map((item: Block) => <BaseBlock {...item} />)}
                 </div>

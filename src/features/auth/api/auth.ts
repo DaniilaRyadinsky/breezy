@@ -1,4 +1,13 @@
+import { User } from '../../../entities/user/lib/types';
 import { apiFetch } from '../../../shared/api';
+
+type AuthResponse = {
+  accessToken: string,
+  expAccess: number,
+  refreshToken: string,
+  expRefresh: number,
+  metadata: User,
+}
 
 export async function fetchAuth(
   login: string,
@@ -12,7 +21,7 @@ export async function fetchAuth(
     body = JSON.stringify({ login: login, password });
   }
 
-  return apiFetch('auth', {
+  return apiFetch<AuthResponse>('auth', {
     method: 'POST',
     body: body,
   })
@@ -23,7 +32,7 @@ export async function fetchReg(
   email: string,
   password: string
 ) {
-  return apiFetch('auth/reg', {
+  return apiFetch<AuthResponse>('auth/reg', {
     method: 'POST',
     body: JSON.stringify({ email, login: login, pw1: password, pw2: password }),
   })

@@ -10,15 +10,14 @@ import { ArchiveIcon } from '../../../shared/ui/icons/ArchiveIcon'
 import { BasketIcon } from '../../../shared/ui/icons/BasketIcon'
 import { PenIcon } from '../../../shared/ui/icons/PenIcon'
 import { useActiveNoteStore } from '../../../entities/note/model/store'
-
-interface ISideBar {
-  isVisible: boolean;
-  setIsVisible: (isVisible: boolean) => void
-}
+import { useAppStore } from '../../../app/lib/AppStore'
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 
-export const Sidebar = ({ isVisible, setIsVisible }: ISideBar) => {
+export const Sidebar = () => {
+  const isSidebarOpen = useAppStore(s => s.isSidebarOpen);
+  const openSidebar = useAppStore(s => s.openSidebar);
+
   const [mode, setMode] = useState<sidebarModes>('notes')
 
   const clearNote = useActiveNoteStore((state) => state.clearNote)
@@ -31,12 +30,12 @@ export const Sidebar = ({ isVisible, setIsVisible }: ISideBar) => {
 
   const handleChangeModeClick = (mode: sidebarModes) => {
     setMode(mode);
-    setIsVisible(true)
+    openSidebar()
   }
 
   return (
     <div className={clsx([styles.sidebar], {
-      [styles.sidebar_visible]: isVisible
+      [styles.sidebar_visible]: isSidebarOpen
     })} >
       <div className={styles.left_container}>
 
@@ -65,11 +64,11 @@ export const Sidebar = ({ isVisible, setIsVisible }: ISideBar) => {
       </div>
 
       <div className={clsx([styles.sidebar_panel],
-        { [styles.sidebar_panel_visible]: isVisible })}>
-        {isVisible && mode === 'notes' && <Notes />}
+        { [styles.sidebar_panel_visible]: isSidebarOpen })}>
+        {isSidebarOpen && mode === 'notes' && <Notes />}
         {/* {isVisible && mode === SideBarModes.Tags && <Tags/>} */}
-        {isVisible && mode === 'archive' && <Notes />}
-        {isVisible && mode === 'basket' && <Notes />}
+        {isSidebarOpen && mode === 'archive' && <Notes />}
+        {isSidebarOpen && mode === 'basket' && <Notes />}
       </div>
     </div>
   )
