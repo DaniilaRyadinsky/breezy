@@ -1,6 +1,6 @@
-import { ITextSegment, StyleText } from "../../../../entities/note/model/blockTypes";
+import { TextSegmentType, StyleText } from "@/entities/note/model/blockTypes";
 
-const TextSegment = ({style, text}: ITextSegment) => {
+const TextSegment = ({style, text}: TextSegmentType) => {
     const getStyle = () => {
         switch (style) {
             case StyleText.Bold:
@@ -14,7 +14,7 @@ const TextSegment = ({style, text}: ITextSegment) => {
     };
 
     return (
-        <span style={getStyle()}>{text}</span>
+        <span style={getStyle()}>{text? text:''}</span>
     )
 }
 

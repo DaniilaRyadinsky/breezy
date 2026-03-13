@@ -4,64 +4,91 @@ export enum StyleText {
   Italic //стили не все
 }
 
-export enum BlockTypes {
-  Paragraph,
-  Header,
-  List,
-  Code,
-  Quote,
-  Link,
-  File //пока достаточно
-}
 
-export interface ITextSegment {
+export type BlockType = "text" | "list" | "header" | "img" | "link" | "code" | "file" | "quote";
+
+export type TextSegmentType = {
   style: StyleText,
   text: string
 }
 
-export interface IBaseBlock {
+export type BaseBlockType = {
   id: string,
-  type: BlockTypes,
-  is_used: boolean,
-  note_id: string,
-  order: number,
-  created_at: number,
-  updated_at: number,
+  type: BlockType,
+  pos: number,
 }
 
-export interface IParagraph extends IBaseBlock {
-  type: BlockTypes.Paragraph,
+export type TextBlockType = BaseBlockType & {
+  type: "text",
   data: {
-    text: ITextSegment[]
+    text: TextSegmentType[],
   }
 }
 
-export interface IQuote extends IBaseBlock {
-  type: BlockTypes.Quote,
+export type ListBlockType = BaseBlockType & {
+  type: "list",
   data: {
-    text: ITextSegment[]
+    text_data: TextSegmentType[],
+    level: 1 | 2 | 3 | 4,
+    type: "ordered" | "unordered" | "todo",
+    value: number,
   }
 }
 
-export interface IHeader extends IBaseBlock {
-  type: BlockTypes.Header,
-  level: 1 | 2 | 3 | 4
+export type HeaderBlockType = BaseBlockType & {
+  type: "header",
   data: {
-    text: ITextSegment[]
+    text_data: TextSegmentType[],
+    level: 1 | 2 | 3 | 4,
   }
 }
 
-export enum ListModes {
-  Ordered,
-  Unordered,
-  Todo
+export type ImgBlockType = BaseBlockType & {
+  type: "img",
+  data: {
+    alt: string,
+    src: string,
+  }
 }
 
-export interface IList extends IBaseBlock {
-  type: BlockTypes.List,
-  tabs: number,
-  mode: ListModes,
-  checked: number | null
+export type LinkBlockType = BaseBlockType & {
+  type: "link",
+  data: {
+    text: string,
+    url: string,
+  }
 }
 
-export type Block = IParagraph | IHeader | IList | IQuote
+export type QuoteBlockType = BaseBlockType & {
+  type: "quote",
+  data: {
+    text: string,
+  }
+}
+
+export type CodeBlockType = BaseBlockType & {
+  type: 'code',
+  data: {
+    text: string,
+    lang: string
+  }
+}
+
+export type FileBlockType = BaseBlockType & {
+  type: "file",
+  data: {
+    src: string,
+  }
+}
+
+
+export type Block =
+
+  TextBlockType |
+  ListBlockType |
+  HeaderBlockType |
+  ImgBlockType |
+  LinkBlockType |
+  QuoteBlockType |
+  CodeBlockType |
+  FileBlockType;

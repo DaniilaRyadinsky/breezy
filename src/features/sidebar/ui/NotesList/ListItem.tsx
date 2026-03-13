@@ -25,13 +25,13 @@ export const ListItem = ({ item }: IListItem) => {
   };
 
   const menuOps = [
-    {title: "удалить заметку",
+    {title: "Удалить заметку",
       action: () => console.log('1')
     },
-    {title: "удалить заметку",
+    {title: "Добавить тег",
       action: () => console.log('2')
     },
-    {title: "удалить заметку",
+    {title: "Поделиться",
       action: () => console.log('3')
     }
   ]

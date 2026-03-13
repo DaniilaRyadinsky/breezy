@@ -2,15 +2,11 @@ import React from 'react'
 
 import {  IconButton,  Menu, MenuItem} from '@mui/material'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import type {Option} from '../../model/types'
 
-type Option = {
-  title: string,
-  action: () => void,
-}
 
 interface IPointsMenu {
   options: Option[],
-
 }
 
 const ITEM_HEIGHT = 48;
