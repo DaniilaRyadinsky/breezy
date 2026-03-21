@@ -1,17 +1,33 @@
 import { TextBlock } from '../TextBlock/TextBlock';
 import ListBlock from '../ListBlock/ListBlock';
 import HeaderBlock from '../HeaderBlock/HeaderBlock';
-import type { Block } from '../../../../entities/note/model/blockTypes';
+import type { Block, BlockType } from '../../../../entities/note/model/blockTypes';
+import { useEffect, useRef } from 'react';
+import { getCaretOffsetInElement, getCaretRectInside, getEditableStartX } from '../../lib';
+import { useBlocksRegistry } from '../../model/BlocksRegistryContext';
 
 
 import styles from './BaseBlock.module.css'
-import { useRef } from 'react';
-import { getCaretOffsetInElement } from '../../lib';
-import { initBlock, useActiveNoteStore } from '@/entities/note/model/store';
 
-const BaseBlock = (props: Block) => {
+
+type BaseBlockProps = Block & {
+    index: number;
+    totalBlocks: number;
+    onNavigate: (id: string, direction: 'up' | 'down', x: number) => void;
+    onCreateBlock: (type: BlockType) => void;
+    onDeleteBlock: () => void
+}
+
+const BaseBlock = (props: BaseBlockProps) => {
     const ref = useRef<HTMLDivElement>(null)
-    const insertBlockAfter = useActiveNoteStore((state) => state.insertBlockAfter)
+    const { registerBlock, unregisterBlock } = useBlocksRegistry();
+
+    useEffect(() => {
+        if (ref.current) {
+            registerBlock(props.id, ref.current);
+        }
+        return () => unregisterBlock(props.id);
+    }, [props.id]);
 
 
     function GiveBlock() {
@@ -28,21 +44,58 @@ const BaseBlock = (props: Block) => {
     }
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        const el = ref.current
+        if (!el) return
+
         if (e.key === 'Enter') {
             e.preventDefault()
-
-            const el = ref.current
-            if (!el) return
-
             const offset = getCaretOffsetInElement(el)
             const textLength = el.textContent?.length ?? 0
 
             if (offset === textLength) {
                 console.log("создать новый блок снизу", props.id)
-                insertBlockAfter(props.id, initBlock(props.type));
+                props.onCreateBlock(props.type);
 
             } else {
                 console.log("split блока")
+            }
+        }
+        if (e.key === 'Backspace') {
+            const textLength = el.textContent?.length ?? 0
+            if (!textLength) {
+                e.preventDefault()
+                props.onDeleteBlock()
+            }
+        }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            const isEmpty = !(el.textContent ?? "").trim();
+
+            if (isEmpty) {
+                e.preventDefault();
+                props.onNavigate(
+                    props.id,
+                    e.key === 'ArrowUp' ? 'up' : 'down',
+                    getEditableStartX(el)
+                );
+                return;
+            }
+
+            const caretRect = getCaretRectInside(el);
+            if (!caretRect) return;
+
+            const blockRect = el.getBoundingClientRect();
+            const shouldNavigate =
+                e.key === 'ArrowUp'
+                    ? caretRect.top <= blockRect.top + 17
+                    : caretRect.bottom >= blockRect.bottom - 17;
+
+            if (shouldNavigate) {
+                e.preventDefault();
+                props.onNavigate(
+                    props.id,
+                    e.key === 'ArrowUp' ? 'up' : 'down',
+                    caretRect.left
+                );
             }
         }
     }
@@ -86,6 +139,7 @@ const BaseBlock = (props: Block) => {
             onKeyDown={onKeyDown}
             onInput={onInput}
             ref={ref}
+            tabIndex={0}
         >
             {GiveBlock()}
         </div>

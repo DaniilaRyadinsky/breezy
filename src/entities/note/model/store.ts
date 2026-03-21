@@ -10,6 +10,7 @@ interface ActiveNoteNoteState {
   clearNote: () => void,
   addBlock: (newBlock: Block) => void,
   insertBlockAfter: (afterId: string, newBlock: Block) => void,
+  removeBlock: (id: string) => void,
 }
 
 export const useActiveNoteStore = create<ActiveNoteNoteState>((set) => ({
@@ -18,33 +19,42 @@ export const useActiveNoteStore = create<ActiveNoteNoteState>((set) => ({
   selectNote: (note) => set({ activeNote: note }),
   clearNote: () => set({ activeNote: null }),
 
-  addBlock: (newBlock) => {
-    set((state) => {
-      if (!state.activeNote) return state
-      const newBlocks = [...state.activeNote.blocks, newBlock]
-      console.log(newBlocks);
-      return {
-        activeNote: { ...state.activeNote, blocks: newBlocks }
-      }
-    })
-  },
+  addBlock: (newBlock) => set((state) => {
+    if (!state.activeNote) return state
+    const newBlocks = [...state.activeNote.blocks, newBlock]
+    console.log(newBlocks);
+    return {
+      activeNote: { ...state.activeNote, blocks: newBlocks }
+    }
+  })
+  ,
 
-  insertBlockAfter: (afterId: string, newBlock: Block) => {
-    set((state) => {
-      if (!state.activeNote) return state
-      
-      const newBlocks = [...state.activeNote.blocks]
-      const index = newBlocks.findIndex(block => block.id === afterId)
+  insertBlockAfter: (afterId: string, newBlock: Block) => set((state) => {
+    if (!state.activeNote) return state
 
-      if (index === -1) return state;
+    const newBlocks = [...state.activeNote.blocks]
+    const index = newBlocks.findIndex(block => block.id === afterId)
 
-      newBlocks.splice(index + 1, 0, newBlock);
+    if (index === -1) return state;
 
-      return {
-        activeNote: { ...state.activeNote, blocks: newBlocks }
-      }
-    })
-  }
+    newBlocks.splice(index + 1, 0, newBlock);
+
+    return {
+      activeNote: { ...state.activeNote, blocks: newBlocks }
+    }
+  })
+  ,
+
+  removeBlock: (id: string) => set((state) => {
+    if (!state.activeNote) return state
+    const newBlocks = [...state.activeNote.blocks].filter(el => el.id !== id)
+    return {
+      activeNote: { ...state.activeNote, blocks: newBlocks }
+    }
+  })
+
+
+
 
 }))
 

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { RefObject, useEffect, useState } from 'react'
 import styles from './MainTitle.module.css'
 import { useActiveNoteStore } from '../../../entities/note/model/store';
 import { useNoteMutations } from '../../../entities/note/lib/useNoteMuttion';
 
 
-const MainTitle = () => {
+const MainTitle = ({ ref }: { ref: RefObject<HTMLInputElement| null>  }) => {
   const activeNote = useActiveNoteStore((state) => state.activeNote);
   const [titleState, setTitleState] = useState('');
 
@@ -34,7 +34,10 @@ const MainTitle = () => {
         value={titleState}
         placeholder={'fff'}
         onChange={(e) => setTitleState(e.target.value)}
-        onBlur={() => handleAddNote()} />
+        onBlur={() => handleAddNote()}
+        ref={ref}
+      />
+
       {/* <h1 className={styles.title}>
             {title}
         </h1> */}
