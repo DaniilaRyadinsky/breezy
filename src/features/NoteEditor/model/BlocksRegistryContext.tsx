@@ -4,9 +4,9 @@ import { setCaretToEdge } from '../lib';
 
 interface BlocksRegistry {
   // Сама мапа: ID блока -> ссылка на DOM элемент
-  blocksMap: Map<string, HTMLDivElement>;
+  blocksMap: Map<string, HTMLElement>;
   // Метод для регистрации блока (вызывается при монтировании)
-  registerBlock: (id: string, element: HTMLDivElement) => void;
+  registerBlock: (id: string, element: HTMLElement) => void;
   // Метод для удаления из реестра (при размонтировании)
   unregisterBlock: (id: string) => void;
   // Метод для установки фокуса
@@ -17,9 +17,9 @@ interface BlocksRegistry {
 const BlocksRegistryContext = createContext<BlocksRegistry | null>(null);
 
 export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) => {
-  const blocksMap = useRef(new Map<string, HTMLDivElement>());
+  const blocksMap = useRef(new Map<string, HTMLElement>());
 
-  const registerBlock = (id: string, element: HTMLDivElement) => {
+  const registerBlock = (id: string, element: HTMLElement) => {
     blocksMap.current.set(id, element);
   };
 

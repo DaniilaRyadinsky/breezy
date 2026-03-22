@@ -1,23 +1,15 @@
 import styles from './TextBlock.module.css'
 import TextSegment from '../TextSegment/TextSegment'
 import { TextBlockType } from '@/entities/note/model/blockTypes'
-import TextInput from '../../textInputt'
 
-
-export const TextBlock = ({ id, data }: TextBlockType) => {
-      const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-         console.log('key')
-          if (e.key === 'Enter') {
-              e.preventDefault()
-              console.log('Enter pressed')
-  
-          }
-      }
-  
+type TextBlockProps = TextBlockType & {
+    editableRef: (node: HTMLElement | null) => void;
+}
+export const TextBlock = ({ id, data, editableRef }: TextBlockProps) => {
 
   return (
     // <TextInput text={data.text}/>
-    <p id={id} className={styles.text} onKeyDown={onKeyDown}>
+    <p id={id} className={styles.text} contentEditable ref={editableRef}>
       {data.text.map(item => <TextSegment {...item} />)}
     </p>
 

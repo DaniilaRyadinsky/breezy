@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Note } from './noteTypes'
-import { Block, BlockType } from './blockTypes'
+import { Block } from './blockTypes'
+import { getInsertPositionAfter } from '../lib/getInsertPosition'
 
 
 interface ActiveNoteNoteState {
@@ -33,11 +34,10 @@ export const useActiveNoteStore = create<ActiveNoteNoteState>((set) => ({
     if (!state.activeNote) return state
 
     const newBlocks = [...state.activeNote.blocks]
-    const index = newBlocks.findIndex(block => block.id === afterId)
+    const pos = getInsertPositionAfter(newBlocks, afterId);
+    if (pos === null) return state;
 
-    if (index === -1) return state;
-
-    newBlocks.splice(index + 1, 0, newBlock);
+    newBlocks.splice(pos, 0, newBlock);
 
     return {
       activeNote: { ...state.activeNote, blocks: newBlocks }
@@ -53,57 +53,7 @@ export const useActiveNoteStore = create<ActiveNoteNoteState>((set) => ({
     }
   })
 
-
-
-
 }))
-
-
-
-export const initBlock = (type: BlockType): Block => {
-  switch (type) {
-    case 'text':
-      console.log('init text block')
-      return {
-        id: crypto.randomUUID(),
-        type: 'text',
-        pos: 0,
-        data: {
-          text: [],
-        }
-      } as Block
-    case 'header':
-      return {
-        id: crypto.randomUUID(),
-        type: 'header',
-        pos: 0,
-        data: {
-          text_data: [],
-          level: 1
-        }
-      } as Block
-    case 'list':
-      return {
-        id: crypto.randomUUID(),
-        type: 'list',
-        pos: 0,
-        data: {
-          text_data: [],
-          level: 1,
-          type: 'unordered',
-          value: 1,
-        }
-      }
-    default:
-      return {
-        id: crypto.randomUUID(),
-        type,
-        pos: 0,
-      } as Block
-  }
-
-}
-
 
 
 

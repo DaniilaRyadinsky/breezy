@@ -3,7 +3,11 @@ import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './ListBlock.module.css'
 
 
-const ListBlock = ({ id, data }: ListBlockType) => {
+type ListBlockProps = ListBlockType & {
+    editableRef: (node: HTMLElement | null) => void;
+}
+
+const ListBlock = ({ id, data, editableRef }: ListBlockProps) => {
   const {
     text_data,
     level,
@@ -33,7 +37,7 @@ const ListBlock = ({ id, data }: ListBlockType) => {
       <div className={styles.list_sign}>
         {GetSign()}
       </div>
-      <p id={id} className={styles.text}>
+      <p id={id} className={styles.text} contentEditable ref={editableRef}>
         {text_data.map(item => <TextSegmentType {...item} />)}
       </p>
     </div>
