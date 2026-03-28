@@ -83,7 +83,6 @@ export type FileBlockType = BaseBlockType & {
 
 
 export type Block =
-
   TextBlockType |
   ListBlockType |
   HeaderBlockType |

@@ -1,64 +1,45 @@
 import { TextBlock } from '../TextBlock/TextBlock';
 import ListBlock from '../ListBlock/ListBlock';
 import HeaderBlock from '../HeaderBlock/HeaderBlock';
-import type { Block, BlockType } from '../../../../entities/note/model/blockTypes';
-import { useCallback, useEffect, useRef } from 'react';
-import { getCaretOffsetInElement, getCaretRectInside, getEditableStartX, setCaretToEdge } from '../../lib';
+import type { BlockType } from '@/entities/note/model/blockTypes';
+import { memo, useCallback, useRef } from 'react';
+import { getCaretOffsetInElement, getCaretRectInside, getEditableStartX } from '../../lib';
 import { useBlocksRegistry } from '../../model/BlocksRegistryContext';
 
 
 import styles from './BaseBlock.module.css'
+import { useActiveNoteStore } from '@/entities/note/model/store';
+import { calculateTarget } from '../../lib/handleNavigate';
 
 
-type BaseBlockProps = Block & {
-    index: number;
-    totalBlocks: number;
-    onNavigate: (id: string, direction: 'up' | 'down', x: number) => void;
-    onCreateBlock: (type: BlockType) => void;
-    onDeleteBlock: () => void;
-    pendingFocusId: string | null;
-    clearPendingFocus: () => void;
+type BaseBlockProps = {
+    id: string;
+    onCreateBlock: (type: BlockType, afterId: string) => void;
+    onDeleteBlock: (id: string) => void;
 };
 
-const BaseBlock = (props: BaseBlockProps) => {
+
+const BaseBlock = memo((props: BaseBlockProps) => {
+    const block = useActiveNoteStore((state) =>
+        state.activeNote?.blocksById[props.id] ?? null
+    );
+
+    if (!block) return null;
+
+
     const editableRef = useRef<HTMLElement | null>(null);
 
-    const { registerBlock, unregisterBlock } = useBlocksRegistry();
+    const { registerBlock, unregisterBlock, focusBlockAtCoordinate } = useBlocksRegistry();
 
     const setEditableRef = useCallback((node: HTMLElement | null) => {
         editableRef.current = node;
 
         if (node) {
             registerBlock(props.id, node);
-
-            if (props.pendingFocusId === props.id) {
-                node.focus();
-                setCaretToEdge(node, 'start');
-                props.clearPendingFocus();
-            }
         } else {
             unregisterBlock(props.id);
         }
-    }, [
-        props.id,
-        props.pendingFocusId,
-        props.clearPendingFocus,
-        registerBlock,
-        unregisterBlock,
-    ]);
-
-    function GiveBlock() {
-        switch (props.type) {
-            case "text":
-                return <TextBlock {...props} editableRef={setEditableRef} />;
-            case "list":
-                return <ListBlock {...props} editableRef={setEditableRef} />;
-            case "header":
-                return <HeaderBlock {...props} editableRef={setEditableRef} />;
-            case "quote":
-                return null;
-        }
-    }
+    }, [props.id, registerBlock, unregisterBlock]);
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const el = editableRef.current;
@@ -70,7 +51,8 @@ const BaseBlock = (props: BaseBlockProps) => {
             const textLength = el.textContent?.length ?? 0;
 
             if (offset === textLength) {
-                props.onCreateBlock(props.type);
+                if (!block) return;
+                props.onCreateBlock(block.type, props.id);
             } else {
                 console.log("split блока");
             }
@@ -80,7 +62,7 @@ const BaseBlock = (props: BaseBlockProps) => {
             const textLength = el.textContent?.length ?? 0;
             if (!textLength) {
                 e.preventDefault();
-                props.onDeleteBlock();
+                props.onDeleteBlock(props.id);
             }
         }
 
@@ -89,30 +71,33 @@ const BaseBlock = (props: BaseBlockProps) => {
 
             if (isEmpty) {
                 e.preventDefault();
-                props.onNavigate(
-                    props.id,
-                    e.key === 'ArrowUp' ? 'up' : 'down',
-                    getEditableStartX(el)
-                );
+                const direction = e.key === 'ArrowUp' ? 'up' : 'down';
+                const target = calculateTarget(props.id, direction);
+
+                if (!target) return;
+
+                focusBlockAtCoordinate(target, getEditableStartX(el), direction);
                 return;
             }
-
             const caretRect = getCaretRectInside(el);
+
             if (!caretRect) return;
 
             const blockRect = el.getBoundingClientRect();
-            const shouldNavigate =
-                e.key === 'ArrowUp'
-                    ? caretRect.top <= blockRect.top + 17
-                    : caretRect.bottom >= blockRect.bottom - 17;
+
+            const shouldNavigate = e.key === 'ArrowUp' ?
+                caretRect.top <= blockRect.top + 17
+                : caretRect.bottom >= blockRect.bottom - 17;
 
             if (shouldNavigate) {
                 e.preventDefault();
-                props.onNavigate(
-                    props.id,
-                    e.key === 'ArrowUp' ? 'up' : 'down',
-                    caretRect.left
-                );
+
+                const direction = e.key === 'ArrowUp' ? 'up' : 'down';
+                const target = calculateTarget(props.id, direction);
+
+                if (!target) return;
+
+                focusBlockAtCoordinate(target, caretRect.left, direction);
             }
         }
     };
@@ -150,9 +135,18 @@ const BaseBlock = (props: BaseBlockProps) => {
             onKeyDown={onKeyDown}
             onInput={onInput}
         >
-            {GiveBlock()}
+            {block.type === 'text' && (<TextBlock {...block} editableRef={setEditableRef} />)}
+
+            {block.type === 'list' && (<ListBlock {...block} editableRef={setEditableRef} />)}
+
+            {block.type === 'header' && (<HeaderBlock {...block} editableRef={setEditableRef} />)}
+
+            {block.type === 'quote' && null}
         </div>
     );
-};
+});
+
+BaseBlock.displayName = 'BaseBlock';
+
 
 export default BaseBlock;

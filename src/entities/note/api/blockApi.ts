@@ -4,7 +4,7 @@ import { Block } from "../model/blockTypes";
 export const createBlockApi = (block: Block, note_id: string, pos: number) => {
   return apiFetch<{id: string}>('block', {
     method: "POST",
-    body: JSON.stringify({...block, note_id, pos})
+    body: JSON.stringify({...block, new_id: block.id, note_id, pos})
   })
 }
 

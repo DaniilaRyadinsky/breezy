@@ -12,7 +12,7 @@ export type NoteInfo = {
 
 
 export type Note = {
-    id: null | string;
+    id: string;
     author: string,
     editors: string[],
     readers: string[],
@@ -21,4 +21,12 @@ export type Note = {
     updated_at: number,
     blocks: Block[],
     tag: Tag
+}
+
+
+export type ActiveNote = {
+  id: string;
+  title: string;
+  blockOrder: string[];
+  blocksById: Record<string, Block>;
 }

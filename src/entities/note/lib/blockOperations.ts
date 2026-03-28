@@ -1,47 +1,61 @@
 import { Block, BlockType } from "../model/blockTypes";
-import { getInsertPositionAfter } from "./getInsertPosition";
+import { ActiveNote } from "../model/noteTypes";
 import { initBlock } from "./initBlock";
 
-type InsertBlockResult = {
-  newBlock: Block;
-  pos: number;
-  nextBlocks: Block[];
-};
-
-export const prepareInsertBlockAfter = (
-  blocks: Block[],
+export const insertBlockAfter = (
+  note: ActiveNote,
   type: BlockType,
   afterId: string
-): InsertBlockResult | null => {
+): { nextNote: ActiveNote; newBlock: Block; pos: number } | null => {
+  const index = note.blockOrder.indexOf(afterId);
+  if (index === -1) return null;
+
   const newBlock = initBlock(type);
-  const pos = getInsertPositionAfter(blocks, afterId);
+  const pos = index + 1;
 
-  if (pos === null) return null;
+  const nextOrder = [...note.blockOrder];
+  nextOrder.splice(pos, 0, newBlock.id);
 
-  const nextBlocks = insertBlockAt(blocks, newBlock, pos);
+  const nextBlocksById = {
+    ...note.blocksById,
+    [newBlock.id]: newBlock,
+  };
 
   return {
     newBlock,
     pos,
-    nextBlocks,
+    nextNote: {
+      ...note,
+      blockOrder: nextOrder,
+      blocksById: nextBlocksById,
+    },
   };
 };
 
-export const insertBlockAt = (
-  blocks: Block[],
-  newBlock: Block, 
-  pos: number
-) => {
-  const newBlocks = [...blocks];
-  newBlocks.splice(pos, 0, newBlock);
+export const removeBlockById = (
+  note: ActiveNote,
+  blockId: string
+): { nextNote: ActiveNote; focusTargetId: string | null; deletedBlock: Block | null } | null => {
+  const index = note.blockOrder.indexOf(blockId);
+  if (index === -1) return null;
 
-  return newBlocks;
-}
+  const deletedBlock = note.blocksById[blockId] ?? null;
 
-export const deleteBlock = (
-  blocks: Block[],
-  deleteId: string
-) => {
-  const newBlocks = blocks.filter(block => block.id !== deleteId)
-  return newBlocks;
-}
+  const nextOrder = note.blockOrder.filter((id) => id !== blockId);
+
+  const nextBlocksById = { ...note.blocksById };
+  delete nextBlocksById[blockId];
+
+  const focusTargetId =
+    nextOrder[index - 1] ?? nextOrder[index] ?? null;
+
+  return {
+    deletedBlock,
+    focusTargetId,
+    nextNote: {
+      ...note,
+      blockOrder: nextOrder,
+      blocksById: nextBlocksById,
+    },
+  };
+};
