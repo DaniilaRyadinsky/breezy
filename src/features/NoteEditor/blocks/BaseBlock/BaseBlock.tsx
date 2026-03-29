@@ -2,14 +2,15 @@ import { TextBlock } from '../TextBlock/TextBlock';
 import ListBlock from '../ListBlock/ListBlock';
 import HeaderBlock from '../HeaderBlock/HeaderBlock';
 import type { BlockType } from '@/entities/note/model/blockTypes';
-import { memo, useCallback, useRef } from 'react';
-import { getCaretOffsetInElement, getCaretRectInside, getEditableStartX } from '../../lib';
-import { useBlocksRegistry } from '../../model/BlocksRegistryContext';
+import { memo } from 'react';
+import { getCaretOffsetInElement } from '../../navigation/lib';
 
 
 import styles from './BaseBlock.module.css'
 import { useActiveNoteStore } from '@/entities/note/model/store';
-import { calculateTarget } from '../../lib/handleNavigate';
+import { useBlockRegistry } from '../../navigation/useBlockRegistry';
+import { useBlockNavigation } from '../../navigation/useBlockNavigation';
+import { useBlockCreateDelete } from './useBlockCreateDelete';
 
 
 type BaseBlockProps = {
@@ -27,78 +28,30 @@ const BaseBlock = memo((props: BaseBlockProps) => {
     if (!block) return null;
 
 
-    const editableRef = useRef<HTMLElement | null>(null);
-
-    const { registerBlock, unregisterBlock, focusBlockAtCoordinate } = useBlocksRegistry();
-
-    const setEditableRef = useCallback((node: HTMLElement | null) => {
-        editableRef.current = node;
-
-        if (node) {
-            registerBlock(props.id, node);
-        } else {
-            unregisterBlock(props.id);
-        }
-    }, [props.id, registerBlock, unregisterBlock]);
+    const { editableRef, setEditableRef } = useBlockRegistry(props.id);
+    const { onEnterDown, onBackspaceDown } = useBlockCreateDelete(
+        props.id,
+        block.type,
+        editableRef,
+        props.onCreateBlock,
+        props.onDeleteBlock
+    );
+    const { onArrowKeyDown } = useBlockNavigation(editableRef, props.id);
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const el = editableRef.current;
         if (!el) return;
 
         if (e.key === 'Enter') {
-            e.preventDefault();
-            const offset = getCaretOffsetInElement(el);
-            const textLength = el.textContent?.length ?? 0;
-
-            if (offset === textLength) {
-                if (!block) return;
-                props.onCreateBlock(block.type, props.id);
-            } else {
-                console.log("split блока");
-            }
+            onEnterDown(e);
         }
 
         if (e.key === 'Backspace') {
-            const textLength = el.textContent?.length ?? 0;
-            if (!textLength) {
-                e.preventDefault();
-                props.onDeleteBlock(props.id);
-            }
+            onBackspaceDown(e);
         }
 
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            const isEmpty = !(el.textContent ?? "").trim();
-
-            if (isEmpty) {
-                e.preventDefault();
-                const direction = e.key === 'ArrowUp' ? 'up' : 'down';
-                const target = calculateTarget(props.id, direction);
-
-                if (!target) return;
-
-                focusBlockAtCoordinate(target, getEditableStartX(el), direction);
-                return;
-            }
-            const caretRect = getCaretRectInside(el);
-
-            if (!caretRect) return;
-
-            const blockRect = el.getBoundingClientRect();
-
-            const shouldNavigate = e.key === 'ArrowUp' ?
-                caretRect.top <= blockRect.top + 17
-                : caretRect.bottom >= blockRect.bottom - 17;
-
-            if (shouldNavigate) {
-                e.preventDefault();
-
-                const direction = e.key === 'ArrowUp' ? 'up' : 'down';
-                const target = calculateTarget(props.id, direction);
-
-                if (!target) return;
-
-                focusBlockAtCoordinate(target, caretRect.left, direction);
-            }
+            onArrowKeyDown(e);
         }
     };
 

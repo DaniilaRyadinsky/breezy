@@ -1,6 +1,6 @@
-// contexts/BlocksRegistryContext.ts
 import { createContext, useContext, useRef, ReactNode, useCallback, useMemo } from 'react';
 import { setCaretToEdge } from '../lib';
+import { BLOCK_NAVIGATION_EDGE_OFFSET } from '../consts';
 
 interface BlocksRegistry {
   blocksMap: Map<string, HTMLElement>;
@@ -51,7 +51,9 @@ export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) =>
       element.focus();
 
       const rect = element.getBoundingClientRect();
-      const targetY = direction === 'down' ? rect.top + 17 : rect.bottom - 17;
+      const targetY = direction === 'down' ? 
+      rect.top + BLOCK_NAVIGATION_EDGE_OFFSET : 
+      rect.bottom - BLOCK_NAVIGATION_EDGE_OFFSET;
 
       const applyRange = (range: Range | null) => {
         if (!range) return false;

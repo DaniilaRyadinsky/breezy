@@ -1,5 +1,5 @@
 import { flushSync } from 'react-dom';
-import { BlocksRegistryProvider, useBlocksRegistry } from './model/BlocksRegistryContext';
+import { BlocksRegistryProvider, useBlocksRegistry } from './navigation/model/BlocksRegistryContext';
 import { BlockType } from '@/entities/note/model/blockTypes';
 import { useActiveNoteStore } from '@/entities/note/model/store';
 import BaseBlock from './blocks/BaseBlock/BaseBlock';

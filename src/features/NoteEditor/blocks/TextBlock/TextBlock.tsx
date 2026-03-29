@@ -10,7 +10,7 @@ export const TextBlock = ({ id, data, editableRef }: TextBlockProps) => {
   return (
     // <TextInput text={data.text}/>
     <p id={id} className={styles.text} contentEditable ref={editableRef}>
-      {data.text.map(item => <TextSegment {...item} />)}
+      {data.text.map((item, index) => <TextSegment key={`${id}-${index}`} {...item} />)}
     </p>
 
   )

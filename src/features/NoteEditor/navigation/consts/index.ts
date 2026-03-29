@@ -1,0 +1,1 @@
+export const BLOCK_NAVIGATION_EDGE_OFFSET = 17;
