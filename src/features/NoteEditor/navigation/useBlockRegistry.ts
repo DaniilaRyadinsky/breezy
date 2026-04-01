@@ -7,13 +7,17 @@ export const useBlockRegistry = (id: string) => {
   const editableRef = useRef<HTMLElement | null>(null);
 
   const setEditableRef = useCallback((node: HTMLElement | null) => {
-    editableRef.current = node;
+    if (!node) return;
 
-    if (node) {
-      registerBlock(id, node);
-    } else {
+    editableRef.current = node;
+    registerBlock(id, node);
+
+    return () => {
+      if (editableRef.current === node) {
+        editableRef.current = null;
+      }
       unregisterBlock(id);
-    }
+    };
   }, [id, registerBlock, unregisterBlock]);
 
   return {

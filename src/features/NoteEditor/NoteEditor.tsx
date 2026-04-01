@@ -24,7 +24,7 @@ const NoteEditorContent = () => {
     const isSidebarOpen = useAppStore(s => s.isSidebarOpen);
 
     const handleAddBlock = (type: 'text' | 'header' | 'list') => {
-        const newBlock = initBlock(type);
+        // const newBlock = initBlock(type);
 
         flushSync(() => {
             // addBlock(newBlock);
@@ -60,10 +60,10 @@ const NoteEditorContent = () => {
     return (
         <div className={styles.container}>
             <ContextMenu options={options}>
-                <div className={clsx([styles.note_editor], {
+                <div 
+                className={clsx([styles.note_editor], {
                     [styles.sidebar_mode]: isSidebarOpen
-                }
-                )}
+                })}
                 >
                     <MainTitle ref={titleRef} />
                     {blockOrder?.map((id) => (

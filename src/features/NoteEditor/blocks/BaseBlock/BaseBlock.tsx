@@ -27,7 +27,6 @@ const BaseBlock = memo((props: BaseBlockProps) => {
 
     if (!block) return null;
 
-
     const { editableRef, setEditableRef } = useBlockRegistry(props.id);
     const { onEnterDown, onBackspaceDown } = useBlockCreateDelete(
         props.id,
@@ -44,6 +43,7 @@ const BaseBlock = memo((props: BaseBlockProps) => {
 
         if (e.key === 'Enter') {
             onEnterDown(e);
+            console.log(block)
         }
 
         if (e.key === 'Backspace') {

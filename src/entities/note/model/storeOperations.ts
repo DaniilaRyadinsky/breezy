@@ -1,8 +1,8 @@
-import { removeBlockById, insertBlockAfter } from "../lib";
+import { removeBlockById, insertBlockAfter, updateBlock } from "../lib";
 import { processSyncQueue } from "../sync/lib/processSyncQueue";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncDelete, SyncCreate } from "../sync/model/syncTypes";
-import { BlockType } from "./blockTypes";
+import { BlockDataByType, BlockType } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
 
 export const insertBlock = async (type: BlockType, afterId: string) => {
@@ -88,3 +88,31 @@ export const deleteBlock = async (blockId: string) => {
 
   return focusTargetId;
 };
+
+export const updateBlockContent = async <T extends BlockType>(
+  blockId: string, 
+  type: T,
+  data: BlockDataByType<T>
+) => {
+
+  useActiveNoteStore.setState((state) => {
+    if (!state.activeNote) return state;
+
+    const result = updateBlock(
+      state.activeNote,
+      blockId,
+      type,
+      data
+    );
+
+    if (!result) return state;
+
+    return { activeNote: result };
+    
+  });
+
+  // if (syncOperation) {
+  //   useSyncStore.getState().enqueue(syncOperation);
+  //   void processSyncQueue();
+  // }
+}

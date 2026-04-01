@@ -91,3 +91,17 @@ export type Block =
   QuoteBlockType |
   CodeBlockType |
   FileBlockType;
+
+  type BlockMap = {
+    text: TextBlockType;
+    list: ListBlockType;
+    header: HeaderBlockType;
+    img: ImgBlockType;
+    link: LinkBlockType;
+    quote: QuoteBlockType;
+    code: CodeBlockType;
+    file: FileBlockType;
+  };
+  
+  export type BlockByType<T extends BlockType> = BlockMap[T];
+  export type BlockDataByType<T extends BlockType> = BlockMap[T]["data"];

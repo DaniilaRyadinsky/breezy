@@ -1,4 +1,4 @@
-import { Block, BlockType } from "../model/blockTypes";
+import { Block, BlockByType, BlockDataByType, BlockType } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
 import { initBlock } from "./initBlock";
 
@@ -56,6 +56,32 @@ export const removeBlockById = (
       ...note,
       blockOrder: nextOrder,
       blocksById: nextBlocksById,
+    },
+  };
+};
+
+
+export const updateBlock = <T extends BlockType>(
+  note: ActiveNote,
+  blockId: string,
+  type: T,
+  data: BlockDataByType<T>
+): ActiveNote | null => {
+  const currentBlock = note.blocksById[blockId];
+  if (!currentBlock) return null;
+
+  if (currentBlock.type !== type) return null;
+
+  const updatedBlock = {
+    ...currentBlock,
+    data,
+  } as BlockByType<T>;
+
+  return {
+    ...note,
+    blocksById: {
+      ...note.blocksById,
+      [blockId]: updatedBlock,
     },
   };
 };
