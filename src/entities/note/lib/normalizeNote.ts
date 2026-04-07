@@ -10,6 +10,13 @@ export const normalizeNote = (note: Note): ActiveNote => {
     blocksById[block.id] = block;
   }
 
+  console.log("нормализованная заметка", {
+    id: note.id,
+    title: note.title,
+    blockOrder,
+    blocksById,
+  });
+
   return {
     id: note.id,
     title: note.title,

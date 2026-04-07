@@ -2,8 +2,8 @@ import React from "react";
 import styles from "./TextBlock.module.css";
 import { TextSegmentType } from "@/entities/note/model/blockTypes";
 import TextSegment from "../TextSegment/TextSegment";
-import { useContentEditable } from "../../contenteditable/useContentEtitable";
-import { updateBlockContent } from "@/entities/note/model/storeOperations";
+import { applyTextBlockOperations } from "@/entities/note/model/storeOperations";
+import { useRichTextBlockEditor } from "../../contenteditable/useRichTextBlockEditor";
 
 type TextBlockProps = {
   id: string;
@@ -13,11 +13,12 @@ type TextBlockProps = {
 
 export const TextBlock = ({ id, data, editableRef }: TextBlockProps) => {
 
-  const {mergedRef} = useContentEditable(editableRef, data.text, 
-    (newSegments) => {
-      updateBlockContent(id, "text", { ...data, text: newSegments });
-    }
-  );
+  const {mergedRef} = useRichTextBlockEditor(
+    id,
+    editableRef,
+    data.text,
+    applyTextBlockOperations
+  )
 
 
   return (
@@ -28,7 +29,7 @@ export const TextBlock = ({ id, data, editableRef }: TextBlockProps) => {
       suppressContentEditableWarning
       ref={mergedRef}
     >
-      {data.text.map((item, index) => (
+      {data.text?.map((item, index) => (
         <TextSegment key={`${id}-${index}`} {...item} />
       ))}
     </p>

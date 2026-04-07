@@ -1,32 +1,11 @@
-import { Block } from "../../model/blockTypes";
+import { BlockOperation } from "../../model/operationsType";
 
 type SyncStatus = "pending" | "processing" | "error";
 
-export type SyncCreate = {
+export type SyncType = {
   opId: string;
-  type: "create_block";
-  payload: {
-    note_id: string;
-    block: Block;
-    pos: number;
-  };
   status: SyncStatus;
   retryCount: number;
   lastError?: string;
+  payload: BlockOperation;
 }
-
-export type SyncDelete = {
-  opId: string;
-  type: "delete_block";
-  payload: {
-    note_id: string;
-    block_id: string;
-  };
-  status: SyncStatus;
-  retryCount: number;
-  lastError?: string;
-}
-
-export type SyncOperation =
-  | SyncCreate
-  | SyncDelete;

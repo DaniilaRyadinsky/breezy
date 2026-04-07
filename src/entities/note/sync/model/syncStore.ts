@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import { SyncOperation } from "./syncTypes";
+import { SyncType } from "./syncTypes";
 
 type SyncState = {
-  queue: SyncOperation[];
+  queue: SyncType[];
   isRunning: boolean;
 
-  enqueue: (op: SyncOperation) => void;
+  enqueue: (op: SyncType) => void;
+  listQueue: (ops: SyncType[]) => void;
   markProcessing: (opId: string) => void;
   markError: (opId: string, error: string) => void;
   incrementRetry: (opId: string) => void;
@@ -19,6 +20,7 @@ export const useSyncStore = create<SyncState>((set) => ({
   isRunning: false,
 
   enqueue: (op) => set((state) => ({ queue: [...state.queue, op] })),
+  listQueue: (ops) => set((state) => ({ queue: [...state.queue, ...ops] })),
   markProcessing: (opId) =>
     set((state) => ({ queue: state.queue.map((op) => op.opId === opId ? { ...op, status: "processing" } : op) })),
   markError: (opId, error) =>

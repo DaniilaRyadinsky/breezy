@@ -1,12 +1,13 @@
-import { removeBlockById, insertBlockAfter, updateBlock } from "../lib";
+import { removeBlockById, insertBlockAfter, updateBlock, applyRichTextOperationsToTextData } from "../lib";
 import { processSyncQueue } from "../sync/lib/processSyncQueue";
 import { useSyncStore } from "../sync/model/syncStore";
-import { SyncDelete, SyncCreate } from "../sync/model/syncTypes";
+import { SyncType } from "../sync/model/syncTypes";
 import { BlockDataByType, BlockType } from "./blockTypes";
+import { RichTextOperation } from "./operationsType";
 import { useActiveNoteStore } from "./store";
 
 export const insertBlock = async (type: BlockType, afterId: string) => {
-  let syncOperation: SyncCreate | null = null;
+  let syncOperation: SyncType | null = null;
   let createdBlockId: string | null = null;
 
   useActiveNoteStore.setState((state) => {
@@ -24,11 +25,14 @@ export const insertBlock = async (type: BlockType, afterId: string) => {
 
     syncOperation = {
       opId: crypto.randomUUID(),
-      type: "create_block",
       payload: {
+        op: "create_block",
+        data: {
+          block: result.newBlock,
+          pos: result.pos,
+        },
         note_id: state.activeNote.id!,
-        block: result.newBlock,
-        pos: result.pos,
+        block_id: result.newBlock.id,
       },
       status: "pending",
       retryCount: 0
@@ -55,7 +59,7 @@ export const insertBlock = async (type: BlockType, afterId: string) => {
 
 export const deleteBlock = async (blockId: string) => {
   let focusTargetId: string | null = null;
-  let syncOperation: SyncDelete | null = null;
+  let syncOperation: SyncType | null = null;
 
   useActiveNoteStore.setState((state) => {
     if (!state.activeNote) return state;
@@ -67,10 +71,11 @@ export const deleteBlock = async (blockId: string) => {
 
     syncOperation = {
       opId: crypto.randomUUID(),
-      type: "delete_block",
       payload: {
+        op: "delete_block",
         note_id: state.activeNote.id,
         block_id: blockId,
+        data: {},
       },
       status: "pending",
       retryCount: 0,
@@ -90,7 +95,7 @@ export const deleteBlock = async (blockId: string) => {
 };
 
 export const updateBlockContent = async <T extends BlockType>(
-  blockId: string, 
+  blockId: string,
   type: T,
   data: BlockDataByType<T>
 ) => {
@@ -108,7 +113,7 @@ export const updateBlockContent = async <T extends BlockType>(
     if (!result) return state;
 
     return { activeNote: result };
-    
+
   });
 
   // if (syncOperation) {
@@ -116,3 +121,47 @@ export const updateBlockContent = async <T extends BlockType>(
   //   void processSyncQueue();
   // }
 }
+
+export const applyTextBlockOperations = (
+  note_id: string,
+  block_id: string,
+  operations: RichTextOperation[]
+) => {
+  let syncOperations: SyncType[] | null = null;
+
+  useActiveNoteStore.setState((state) => {
+    const note = state.activeNote;
+    if (!note) return state;
+
+    // если у тебя поле называется иначе, просто замени note.id
+    if (note.id !== note_id) return state;
+
+    const currentBlock = note.blocksById[block_id];
+    if (!currentBlock) return state;
+    if (currentBlock.type !== "text") return state;
+
+    const nextData = applyRichTextOperationsToTextData(
+      currentBlock.data,
+      operations
+    );
+
+    const updatedNote = updateBlock(note, block_id, "text", nextData);
+    if (!updatedNote) return state;
+
+    syncOperations = operations.map((operation) => ({
+      opId: crypto.randomUUID(),
+      payload: operation,
+      status: "pending",
+      retryCount: 0,
+    }));
+
+    return {
+      activeNote: updatedNote,
+    };
+  });
+
+  if (syncOperations) {
+    useSyncStore.getState().listQueue(syncOperations);
+    void processSyncQueue();
+  }
+};

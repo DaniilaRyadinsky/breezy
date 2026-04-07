@@ -1,6 +1,9 @@
-import { Block, BlockByType, BlockDataByType, BlockType } from "../model/blockTypes";
+import { Block, BlockByType, BlockDataByType, BlockType, TextBlockType } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
 import { initBlock } from "./initBlock";
+import { RichTextOperation } from "../model/operationsType";
+import { data } from "react-router-dom";
+import { deleteRange, applyStyleToRange, insertTextAt, getStyleAt, normalizeSegments, ensureSegments } from "@/features/NoteEditor/contenteditable/lib/segmentsUtils";
 
 export const insertBlockAfter = (
   note: ActiveNote,
@@ -83,5 +86,51 @@ export const updateBlock = <T extends BlockType>(
       ...note.blocksById,
       [blockId]: updatedBlock,
     },
+  };
+};
+
+export const applyRichTextOperationsToTextData = (
+  data: TextBlockType["data"],
+  operations: RichTextOperation[]
+): TextBlockType["data"] => {
+  let nextText = ensureSegments(Array.isArray(data?.text) ? data.text : []);
+
+  for (const operation of operations) {
+    switch (operation.op) {
+      case "insert_text": {
+        const style = getStyleAt(nextText, operation.data.pos);
+        nextText = insertTextAt(
+          nextText,
+          operation.data.pos,
+          operation.data.new_text,
+          style
+        );
+        break;
+      }
+
+      case "delete_range": {
+        nextText = deleteRange(
+          nextText,
+          operation.data.start,
+          operation.data.end
+        );
+        break;
+      }
+
+      case "apply_style": {
+        nextText = applyStyleToRange(
+          nextText,
+          operation.data.start,
+          operation.data.end,
+          operation.data.style
+        );
+        break;
+      }
+    }
+  }
+
+  return {
+    ...data,
+    text: normalizeSegments(nextText),
   };
 };

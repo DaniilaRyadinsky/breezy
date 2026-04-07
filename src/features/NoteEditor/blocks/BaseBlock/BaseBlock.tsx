@@ -27,6 +27,7 @@ const BaseBlock = memo((props: BaseBlockProps) => {
 
     if (!block) return null;
 
+
     const { editableRef, setEditableRef } = useBlockRegistry(props.id);
     const { onEnterDown, onBackspaceDown } = useBlockCreateDelete(
         props.id,

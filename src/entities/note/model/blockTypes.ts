@@ -1,15 +1,15 @@
-export enum StyleText {
-  Bold,
-  Normal,
-  Italic //стили не все
-}
+
 
 
 export type BlockType = "text" | "list" | "header" | "img" | "link" | "code" | "file" | "quote";
+export type TextStyle = "default" | "bold" | "italic" | "underline";
+export type ListType = "ordered" | "unordered" | "todo";
+export type ListLevel = 1 | 2 | 3 | 4;
+export type HeaderLevel = 1 | 2 | 3 | 4;
 
 export type TextSegmentType = {
-  style: StyleText,
-  text: string
+  style: TextStyle,
+  string: string
 }
 
 export type BaseBlockType = {
@@ -29,8 +29,8 @@ export type ListBlockType = BaseBlockType & {
   type: "list",
   data: {
     text_data: TextSegmentType[],
-    level: 1 | 2 | 3 | 4,
-    type: "ordered" | "unordered" | "todo",
+    level: ListLevel,
+    type: ListType,
     value: number,
   }
 }
@@ -39,7 +39,7 @@ export type HeaderBlockType = BaseBlockType & {
   type: "header",
   data: {
     text_data: TextSegmentType[],
-    level: 1 | 2 | 3 | 4,
+    level: HeaderLevel,
   }
 }
 

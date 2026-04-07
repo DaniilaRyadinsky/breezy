@@ -12,7 +12,7 @@ export const processNextOperation = async () => {
   try {
     await executeSyncOperation(nextOp);
     useSyncStore.getState().remove(nextOp.opId);
-    console.log(`Operation ${nextOp.type} completed successfully`);
+    console.log(`Operation ${nextOp.payload.op} completed successfully`);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Sync failed";
 

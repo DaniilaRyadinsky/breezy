@@ -1,20 +1,22 @@
-import { TextSegmentType, StyleText } from "@/entities/note/model/blockTypes";
+import { TextSegmentType } from "@/entities/note/model/blockTypes";
 
-const TextSegment = ({style, text}: TextSegmentType) => {
+const TextSegment = ({style, string}: TextSegmentType) => {
     const getStyle = () => {
         switch (style) {
-            case StyleText.Bold:
+            case 'bold':
                 return { fontWeight: 'bold' };
-            case StyleText.Italic:
+            case 'italic':
                 return { fontStyle: 'italic' };
-            case StyleText.Normal:
+            case 'default':
             default:
                 return {};
         }
     };
 
+
+
     return (
-        <span style={getStyle()}>{text? text:''}</span>
+        <span style={getStyle()}>{string? string:''}</span>
     )
 }
 

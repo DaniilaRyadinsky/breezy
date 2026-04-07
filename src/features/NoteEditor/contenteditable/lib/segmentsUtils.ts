@@ -1,58 +1,75 @@
-import { StyleText, TextSegmentType } from "@/entities/note/model/blockTypes";
+import { TextStyle, TextSegmentType } from "@/entities/note/model/blockTypes";
 
-export function normalizeSegments(segments: TextSegmentType[]): TextSegmentType[] {
+const EMPTY_SEGMENT: TextSegmentType = {
+  style: "default",
+  string: "",
+};
+
+export function ensureSegments(
+  segments?: TextSegmentType[] | null
+): TextSegmentType[] {
+  return Array.isArray(segments) && segments.length > 0
+    ? segments.map((seg) => ({ ...seg }))
+    : [{ ...EMPTY_SEGMENT }];
+}
+
+export function normalizeSegments(
+  segments: TextSegmentType[]
+): TextSegmentType[] {
   const result: TextSegmentType[] = [];
 
-  for (const seg of segments) {
-    if (!seg.text) continue;
+  for (const seg of ensureSegments(segments)) {
+    if (!seg.string) continue;
 
     const last = result[result.length - 1];
     if (last && last.style === seg.style) {
-      last.text += seg.text;
+      last.string += seg.string;
     } else {
       result.push({ ...seg });
     }
   }
 
-  return result.length ? result : [{ style: StyleText.Normal, text: "" }];
+  return result.length ? result : [{ ...EMPTY_SEGMENT }];
 }
 
 export function getStyleAt(
   segments: TextSegmentType[],
   offset: number
-): StyleText {
+): TextStyle {
+  const safeSegments = ensureSegments(segments);
   let acc = 0;
 
-  for (const seg of segments) {
-    const next = acc + seg.text.length;
+  for (const seg of safeSegments) {
+    const next = acc + seg.string.length;
     if (offset <= next) return seg.style;
     acc = next;
   }
 
-  return segments[segments.length - 1]?.style ?? StyleText.Normal;
+  return safeSegments[safeSegments.length - 1].style;
 }
 
 export function insertTextAt(
   segments: TextSegmentType[],
   offset: number,
-  text: string,
-  style: StyleText
+  string: string,
+  style: TextStyle
 ): TextSegmentType[] {
+  const safeSegments = ensureSegments(segments);
   const result: TextSegmentType[] = [];
   let acc = 0;
   let inserted = false;
 
-  for (const seg of segments) {
-    const next = acc + seg.text.length;
+  for (const seg of safeSegments) {
+    const next = acc + seg.string.length;
 
     if (!inserted && offset <= next) {
       const localOffset = offset - acc;
-      const left = seg.text.slice(0, localOffset);
-      const right = seg.text.slice(localOffset);
+      const left = seg.string.slice(0, localOffset);
+      const right = seg.string.slice(localOffset);
 
-      if (left) result.push({ ...seg, text: left });
-      if (text) result.push({ style, text });
-      if (right) result.push({ ...seg, text: right });
+      if (left) result.push({ ...seg, string: left });
+      if (string) result.push({ style, string });
+      if (right) result.push({ ...seg, string: right });
 
       inserted = true;
     } else {
@@ -62,8 +79,8 @@ export function insertTextAt(
     acc = next;
   }
 
-  if (!inserted && text) {
-    result.push({ style, text });
+  if (!inserted && string) {
+    result.push({ style, string });
   }
 
   return normalizeSegments(result);
@@ -74,14 +91,16 @@ export function deleteRange(
   start: number,
   end: number
 ): TextSegmentType[] {
-  if (start >= end) return segments;
+  const safeSegments = ensureSegments(segments);
+
+  if (start >= end) return safeSegments;
 
   const result: TextSegmentType[] = [];
   let acc = 0;
 
-  for (const seg of segments) {
+  for (const seg of safeSegments) {
     const segStart = acc;
-    const segEnd = acc + seg.text.length;
+    const segEnd = acc + seg.string.length;
 
     if (segEnd <= start || segStart >= end) {
       result.push({ ...seg });
@@ -89,11 +108,11 @@ export function deleteRange(
       const leftCount = Math.max(0, start - segStart);
       const rightStart = Math.max(0, end - segStart);
 
-      const left = seg.text.slice(0, leftCount);
-      const right = seg.text.slice(rightStart);
+      const left = seg.string.slice(0, leftCount);
+      const right = seg.string.slice(rightStart);
 
-      if (left) result.push({ ...seg, text: left });
-      if (right) result.push({ ...seg, text: right });
+      if (left) result.push({ ...seg, string: left });
+      if (right) result.push({ ...seg, string: right });
     }
 
     acc = segEnd;
@@ -106,41 +125,43 @@ export function replaceRange(
   segments: TextSegmentType[],
   start: number,
   end: number,
-  text: string,
-  style: StyleText
+  string: string,
+  style: TextStyle
 ): TextSegmentType[] {
   const withoutRange = deleteRange(segments, start, end);
-  return insertTextAt(withoutRange, start, text, style);
+  return insertTextAt(withoutRange, start, string, style);
 }
 
 export function applyStyleToRange(
   segments: TextSegmentType[],
   start: number,
   end: number,
-  style: StyleText
+  style: TextStyle
 ): TextSegmentType[] {
-  if (start >= end) return segments;
+  const safeSegments = ensureSegments(segments);
+
+  if (start >= end) return safeSegments;
 
   const result: TextSegmentType[] = [];
   let acc = 0;
 
-  for (const seg of segments) {
+  for (const seg of safeSegments) {
     const segStart = acc;
-    const segEnd = acc + seg.text.length;
+    const segEnd = acc + seg.string.length;
 
     if (segEnd <= start || segStart >= end) {
       result.push({ ...seg });
     } else {
       const leftCut = Math.max(0, start - segStart);
-      const rightCut = Math.min(seg.text.length, end - segStart);
+      const rightCut = Math.min(seg.string.length, end - segStart);
 
-      const left = seg.text.slice(0, leftCut);
-      const middle = seg.text.slice(leftCut, rightCut);
-      const right = seg.text.slice(rightCut);
+      const left = seg.string.slice(0, leftCut);
+      const middle = seg.string.slice(leftCut, rightCut);
+      const right = seg.string.slice(rightCut);
 
-      if (left) result.push({ ...seg, text: left });
-      if (middle) result.push({ style, text: middle });
-      if (right) result.push({ ...seg, text: right });
+      if (left) result.push({ ...seg, string: left });
+      if (middle) result.push({ style, string: middle });
+      if (right) result.push({ ...seg, string: right });
     }
 
     acc = segEnd;

@@ -1,16 +1,27 @@
 import { TextSegmentType } from "@/entities/note/model/blockTypes";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { getSelectionOffsets, setSelectionOffsets } from "./lib/caretUtils";
-import { getStyleAt, replaceRange, deleteRange } from "./lib/segmentsUtils";
+import { RichTextOperation } from "@/entities/note/model/operationsType";
+
+type CaretSelection = {
+  start: number;
+  end: number;
+};
+
+export type LocalRichTextOperation = Omit<
+  RichTextOperation,
+  "note_id" | "block_id"
+>;
 
 export const useContentEditable = (
   editableRef: React.RefCallback<HTMLElement>,
   segments: TextSegmentType[],
-  onChange: (segments: TextSegmentType[]) => void
+  onOperation: (operations: LocalRichTextOperation[]) => void
 ) => {
   const segmentsRef = useRef<TextSegmentType[]>(segments);
-
   const localRef = useRef<HTMLParagraphElement | null>(null);
+
+  const pendingSelectionRef = useRef<CaretSelection | null>(null);
 
   const mergedRef = useCallback<React.RefCallback<HTMLParagraphElement>>(
     (node) => {
@@ -24,8 +35,6 @@ export const useContentEditable = (
     segmentsRef.current = segments;
   }, [segments]);
 
-  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
-
   useLayoutEffect(() => {
     const root = localRef.current;
     const pending = pendingSelectionRef.current;
@@ -35,9 +44,16 @@ export const useContentEditable = (
       pendingSelectionRef.current = null;
     }
   }, [segments]);
+
   useEffect(() => {
     const root = localRef.current;
     if (!root) return;
+
+    const getTextLength = (currentSegments: TextSegmentType[]) => {
+      return currentSegments.reduce((sum, seg) => {
+        return sum + seg.string.length;
+      }, 0);
+    };
 
     const handleBeforeInput = (e: InputEvent) => {
       if (e.isComposing) return;
@@ -45,103 +61,162 @@ export const useContentEditable = (
       const selection = getSelectionOffsets(root);
       if (!selection) return;
 
-      console.log(e.inputType)
-
       const currentSegments = segmentsRef.current;
-      const currentStyle = getStyleAt(currentSegments, selection.start);
+      const operations: LocalRichTextOperation[] = [];
 
       switch (e.inputType) {
         case "insertText": {
+          const text = e.data ?? "";
+          if (!text) return;
+
           e.preventDefault();
 
-          const text = e.data ?? "";
-          const next = replaceRange(
-            currentSegments,
-            selection.start,
-            selection.end,
-            text,
-            currentStyle
-          );
+          if (selection.start !== selection.end) {
+            operations.push({
+              op: "delete_range",
+              data: {
+                start: selection.start,
+                end: selection.end,
+              },
+            });
+          }
+
+          operations.push({
+            op: "insert_text",
+            data: {
+              pos: selection.start,
+              new_text: text,
+            },
+          });
 
           pendingSelectionRef.current = {
             start: selection.start + text.length,
             end: selection.start + text.length,
           };
 
-          onChange(next);
+          onOperation(operations);
           break;
         }
 
         case "deleteContentBackward": {
           e.preventDefault();
 
-          let next: TextSegmentType[];
-          let caret: number;
-
           if (selection.start !== selection.end) {
-            next = deleteRange(currentSegments, selection.start, selection.end);
-            caret = selection.start;
-          } else if (selection.start > 0) {
-            next = deleteRange(currentSegments, selection.start - 1, selection.start);
-            caret = selection.start - 1;
-          } else {
+            operations.push({
+              op: "delete_range",
+              data: {
+                start: selection.start,
+                end: selection.end,
+              },
+            });
+
+            pendingSelectionRef.current = {
+              start: selection.start,
+              end: selection.start,
+            };
+
+            onOperation(operations);
             return;
           }
 
-          pendingSelectionRef.current = { start: caret, end: caret };
-          onChange(next);
+          if (selection.start === 0) return;
+
+          operations.push({
+            op: "delete_range",
+            data: {
+              start: selection.start - 1,
+              end: selection.start,
+            },
+          });
+
+          pendingSelectionRef.current = {
+            start: selection.start - 1,
+            end: selection.start - 1,
+          };
+
+          onOperation(operations);
           break;
         }
 
         case "deleteContentForward": {
           e.preventDefault();
 
-          const fullTextLength = currentSegments.reduce(
-            (sum, seg) => sum + seg.text.length,
-            0
-          );
-
-          let next: TextSegmentType[];
-          let caret: number;
+          const fullTextLength = getTextLength(currentSegments);
 
           if (selection.start !== selection.end) {
-            next = deleteRange(currentSegments, selection.start, selection.end);
-            caret = selection.start;
-          } else if (selection.start < fullTextLength) {
-            next = deleteRange(currentSegments, selection.start, selection.start + 1);
-            caret = selection.start;
-          } else {
+            operations.push({
+              op: "delete_range",
+              data: {
+                start: selection.start,
+                end: selection.end,
+              },
+            });
+
+            pendingSelectionRef.current = {
+              start: selection.start,
+              end: selection.start,
+            };
+
+            onOperation(operations);
             return;
           }
 
-          pendingSelectionRef.current = { start: caret, end: caret };
-          onChange(next);
+          if (selection.start >= fullTextLength) return;
+
+          operations.push({
+            op: "delete_range",
+            data: {
+              start: selection.start,
+              end: selection.start + 1,
+            },
+          });
+
+          pendingSelectionRef.current = {
+            start: selection.start,
+            end: selection.start,
+          };
+
+          onOperation(operations);
           break;
         }
       }
     };
 
     const handlePaste = (e: ClipboardEvent) => {
-      e.preventDefault();
-
       const selection = getSelectionOffsets(root);
       if (!selection) return;
 
       const text = e.clipboardData?.getData("text/plain") ?? "";
-      const currentSegments = segmentsRef.current;
-      const currentStyle = getStyleAt(currentSegments, selection.start);
+      if (!text) return;
 
-      const next = replaceRange(
-        currentSegments,
-        selection.start,
-        selection.end,
-        text,
-        currentStyle
-      );
+      e.preventDefault();
 
-      const caret = selection.start + text.length;
-      pendingSelectionRef.current = { start: caret, end: caret };
-      onChange(next);
+      const operations: LocalRichTextOperation[] = [];
+
+      if (selection.start !== selection.end) {
+        operations.push({
+          op: "delete_range",
+          data: {
+            start: selection.start,
+            end: selection.end,
+          },
+        });
+      }
+
+      operations.push({
+        op: "insert_text",
+        data: {
+          pos: selection.start,
+          new_text: text,
+        },
+      });
+
+      pendingSelectionRef.current = {
+        start: selection.start + text.length,
+        end: selection.start + text.length,
+      };
+
+      onOperation(operations);
     };
 
     root.addEventListener("beforeinput", handleBeforeInput);
@@ -151,10 +226,9 @@ export const useContentEditable = (
       root.removeEventListener("beforeinput", handleBeforeInput);
       root.removeEventListener("paste", handlePaste);
     };
-  }, []);
+  }, [onOperation]);
 
   return {
-    mergedRef
-
-  }
-}
+    mergedRef,
+  };
+};
