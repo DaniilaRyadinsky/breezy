@@ -3,7 +3,7 @@ import styles from "./TextBlock.module.css";
 import { TextSegmentType } from "@/entities/note/model/blockTypes";
 import TextSegment from "../TextSegment/TextSegment";
 import { applyTextBlockOperations } from "@/entities/note/model/storeOperations";
-import { useRichTextBlockEditor } from "../../contenteditable/useRichTextBlockEditor";
+import { useRichTextBlockEditor } from "@/features/contenteditable";
 
 type TextBlockProps = {
   id: string;

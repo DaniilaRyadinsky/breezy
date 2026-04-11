@@ -1,4 +1,4 @@
-import { startSyncScheduler, stopSyncScheduler } from "@/entities/note/sync/lib/syncScheduler";
+import { startSyncScheduler, stopSyncScheduler } from "./syncScheduler";
 import { useEffect } from "react";
 
 export const useSync = () => {

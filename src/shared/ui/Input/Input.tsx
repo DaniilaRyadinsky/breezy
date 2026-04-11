@@ -1,4 +1,4 @@
-import React, { FC, Ref, useState } from 'react'
+import React, {Ref, useState } from 'react'
 import styles from './Input.module.css'
 import clsx from 'clsx'
 

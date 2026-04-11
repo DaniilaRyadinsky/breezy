@@ -10,7 +10,7 @@ import { ArchiveIcon } from '../../../shared/ui/icons/ArchiveIcon'
 import { BasketIcon } from '../../../shared/ui/icons/BasketIcon'
 import { PenIcon } from '../../../shared/ui/icons/PenIcon'
 import { useActiveNoteStore } from '../../../entities/note/model/store'
-import { useAppStore } from '../../../app/lib/AppStore'
+import { useAppStore } from '../../../app/model/AppStore'
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 

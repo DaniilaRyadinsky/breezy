@@ -1,5 +1,5 @@
 import { flushSync } from 'react-dom';
-import { BlocksRegistryProvider, useBlocksRegistry } from './navigation/model/BlocksRegistryContext';
+import { BlocksRegistryProvider, useBlocksRegistry } from '@/features/navigation';
 import { BlockType } from '@/entities/note/model/blockTypes';
 import { useActiveNoteStore } from '@/entities/note/model/store';
 import BaseBlock from './blocks/BaseBlock/BaseBlock';
@@ -10,9 +10,8 @@ import clsx from 'clsx'
 
 import MainTitle from './MainTitle/MainTitle'
 
-import { useAppStore } from '../../app/lib/AppStore'
+import { useAppStore } from '@/app/model/AppStore'
 import { useCallback, useRef } from 'react';
-import { initBlock } from '@/entities/note/lib/initBlock';
 import { deleteBlock, insertBlock } from '@/entities/note/model/storeOperations';
 
 

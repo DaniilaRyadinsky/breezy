@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button } from '../../../../shared/ui/Button/index'
-import { Input } from '../../../../shared/ui/Input/index'
+import { Button } from '@/shared/ui/Button'
+import { Input } from '@/shared/ui/Input'
 import styles from './LoginForm.module.css'
 import { useAuth } from '../../lib/useAuth'
 

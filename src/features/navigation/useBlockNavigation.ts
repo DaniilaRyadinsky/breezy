@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { getEditableStartX, getCaretRectInside, getCaretOffsetInElement } from './lib';
+import { getEditableStartX, getCaretRectInside } from './lib';
 import { calculateTarget } from './lib/handleNavigate';
 import { useBlocksRegistry } from './model/BlocksRegistryContext';
 import { BLOCK_NAVIGATION_EDGE_OFFSET } from './consts';
-import { getCaretOffsetInElementToEnd } from './lib/getCaretOffsetInElement';
+import { getCaretOffsetInElement, getCaretOffsetInElementToEnd } from '@/shared/lib/utils';
 
 export const useBlockNavigation = (
   editableRef: React.RefObject<HTMLElement | null>,

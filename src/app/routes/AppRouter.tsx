@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import LoginPage from '../../pages/LoginPage/LoginPage'
-import MainPage from '../../pages/MainPage/MainPage'
-import RegisterPage from '../../pages/RegistrationPage/RegisterPage'
 import ProtectedRoute from './ProtectedRoute'
+import {LoginPage, RegisterPage, MainPage} from '@/pages'
 
 const AppRouter = () => {
   return (

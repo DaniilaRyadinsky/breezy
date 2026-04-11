@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useState } from 'react'
 import styles from './MainTitle.module.css'
-import { useActiveNoteStore } from '../../../entities/note/model/store';
-import { useNoteMutations } from '../../../entities/note/lib/useNoteMuttion';
+import { useActiveNoteStore } from '@/entities/note/model/store';
+import { useNoteMutations } from '@/entities/note/lib/useNoteMuttion';
 
 
 const MainTitle = ({ ref }: { ref: RefObject<HTMLInputElement| null>  }) => {

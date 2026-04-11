@@ -1,6 +1,6 @@
-import { userStore } from "../entities/user/lib/userStore"
-import { validateTokens } from "../features/auth/api/auth"
+import { userStore } from "@/entities/user"
 import { useEffect } from "react"
+import { validateTokens } from "../api/auth"
 
 export function useSession() {
   const setAuth = userStore((s) => s.setAuth)

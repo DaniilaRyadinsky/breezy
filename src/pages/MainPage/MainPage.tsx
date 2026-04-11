@@ -1,9 +1,9 @@
-import { Sidebar } from '../../features/sidebar'
-import Topbar from '../../widgets/topbar/ui/topbar'
+import { Sidebar } from '@/features/sidebar'
+import Topbar from '@/widgets/topbar/ui/topbar'
 import styles from './MainPage.module.css'
-import { NoteEditor } from '../../features/NoteEditor'
+import { NoteEditor } from '@/features/NoteEditor'
 
-const MainPage = () => {
+export const MainPage = () => {
 
   return (
     <div className={styles.main_page}>
@@ -17,4 +17,3 @@ const MainPage = () => {
   )
 }
 
-export default MainPage

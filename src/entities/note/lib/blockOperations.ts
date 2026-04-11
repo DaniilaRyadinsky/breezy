@@ -1,9 +1,21 @@
-import { Block, BlockByType, BlockDataByType, BlockType, TextBlockType } from "../model/blockTypes";
+import {
+  Block,
+  BlockByType,
+  BlockDataByType,
+  BlockType,
+  TextBlockType
+} from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
 import { initBlock } from "./initBlock";
 import { RichTextOperation } from "../model/operationsType";
-import { data } from "react-router-dom";
-import { deleteRange, applyStyleToRange, insertTextAt, getStyleAt, normalizeSegments, ensureSegments } from "@/features/NoteEditor/contenteditable/lib/segmentsUtils";
+import {
+  deleteRange,
+  applyStyleToRange,
+  insertTextAt,
+  getStyleAt,
+  normalizeSegments,
+  ensureSegments
+} from "@/features/contenteditable";
 
 export const insertBlockAfter = (
   note: ActiveNote,

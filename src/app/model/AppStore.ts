@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-
 interface AppState {
   isSidebarOpen: boolean,
   openSidebar: () => void,

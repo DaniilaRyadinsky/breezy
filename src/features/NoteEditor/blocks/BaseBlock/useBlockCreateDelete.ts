@@ -1,5 +1,5 @@
 import { BlockType } from "@/entities/note/model/blockTypes";
-import { getCaretOffsetInElement } from "../../navigation/lib";
+import { getCaretOffsetInElement } from "@/shared/lib/utils";
 import { useCallback } from "react";
 
 export const useBlockCreateDelete = (

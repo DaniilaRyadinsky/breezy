@@ -2,8 +2,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { fetchAuth, fetchReg } from "../api/auth"
 import { useNavigate } from "react-router-dom"
-import { HttpError } from "../../../shared/api/HttpError"
-import { userStore } from "../../../entities/user/lib/userStore"
+import { HttpError } from "@/shared/api/HttpError"
+import { userStore } from "@/entities/user/lib/userStore"
 
 type AuthMode = "login" | "registration"
 

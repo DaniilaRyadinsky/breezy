@@ -1,4 +1,4 @@
-import { User } from '../../../entities/user/lib/types';
+import type { User } from '../../../entities/user/lib/types';
 import { apiFetch } from '../../../shared/api';
 
 type AuthResponse = {

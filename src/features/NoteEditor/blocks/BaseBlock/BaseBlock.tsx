@@ -3,15 +3,12 @@ import ListBlock from '../ListBlock/ListBlock';
 import HeaderBlock from '../HeaderBlock/HeaderBlock';
 import type { BlockType } from '@/entities/note/model/blockTypes';
 import { memo } from 'react';
-import { getCaretOffsetInElement } from '../../navigation/lib';
-
+import { useActiveNoteStore } from '@/entities/note/model/store';
+import { useBlockRegistry,  useBlockNavigation} from '@/features/navigation';
+import { useBlockCreateDelete } from './useBlockCreateDelete';
+import { getCaretOffsetInElement } from '@/shared/lib/utils';
 
 import styles from './BaseBlock.module.css'
-import { useActiveNoteStore } from '@/entities/note/model/store';
-import { useBlockRegistry } from '../../navigation/useBlockRegistry';
-import { useBlockNavigation } from '../../navigation/useBlockNavigation';
-import { useBlockCreateDelete } from './useBlockCreateDelete';
-
 
 type BaseBlockProps = {
     id: string;
@@ -42,11 +39,9 @@ const BaseBlock = memo((props: BaseBlockProps) => {
         if (e.key === 'Enter') {
             onEnterDown(e);
         }
-
         if (e.key === 'Backspace') {
             onBackspaceDown(e);
         }
-
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             handleVerticalArrow(e);
         }

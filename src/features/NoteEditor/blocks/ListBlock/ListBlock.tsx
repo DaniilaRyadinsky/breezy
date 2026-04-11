@@ -1,4 +1,4 @@
-import type { ListBlockType } from '../../../../entities/note/model/blockTypes';
+import type { ListBlockType } from '@/entities/note/model/blockTypes';
 import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './ListBlock.module.css'
 

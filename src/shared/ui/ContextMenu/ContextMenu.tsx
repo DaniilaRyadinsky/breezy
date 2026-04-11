@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import type { Option } from '../../model/types'
+import type {Option} from '../../model/types'
 
 interface IContextMenu {
   children: React.ReactNode,

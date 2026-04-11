@@ -1,5 +1,5 @@
-import React, { JSX, ReactElement } from 'react'
-import logo from '../../../../shared/assets/img/icon.png'
+import React from 'react'
+import logo from '@/shared/assets/img/icon.png'
 import styles from './AuthContainer.module.css'
 
 interface IAuhtContainer {

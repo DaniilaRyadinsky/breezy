@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './App.css'
 import AppRouter from './routes/AppRouter'
-import { useSession } from './useSession';
-import { useSync } from './useSync';
+import { useSync } from '@/entities/note/sync';
+import { useSession } from '@/features/auth';
 
 const queryClient = new QueryClient();
 

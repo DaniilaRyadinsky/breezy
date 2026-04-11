@@ -1,6 +1,6 @@
 import { HttpError } from './HttpError';
 import { BASE_URL } from '../consts/BaseUrl';
-import { userStore } from '../../entities/user/lib/userStore';
+import { userStore } from '@/entities/user/lib/userStore';
 
 
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
