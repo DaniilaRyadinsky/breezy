@@ -9,7 +9,7 @@ export const initBlock = (type: BlockType): Block => {
         type: 'text',
         pos: 0,
         data: {
-          text: [],
+          text: [{style: 'default', string: ''}],
         }
       } as Block
     case 'header':
@@ -18,7 +18,7 @@ export const initBlock = (type: BlockType): Block => {
         type: 'header',
         pos: 0,
         data: {
-          text_data: [],
+          text_data: [{style: 'default', string: ''}],
           level: 1
         }
       } as Block
@@ -28,7 +28,7 @@ export const initBlock = (type: BlockType): Block => {
         type: 'list',
         pos: 0,
         data: {
-          text_data: [],
+          text_data: [{style: 'default', string: ''}],
           level: 1,
           type: 'unordered',
           value: 1,

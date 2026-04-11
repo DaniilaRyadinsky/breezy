@@ -36,15 +36,11 @@ const BaseBlock = memo((props: BaseBlockProps) => {
         props.onCreateBlock,
         props.onDeleteBlock
     );
-    const { onArrowKeyDown } = useBlockNavigation(editableRef, props.id);
+    const {handleHorizontalArrow, handleVerticalArrow } = useBlockNavigation(editableRef, props.id);
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        const el = editableRef.current;
-        if (!el) return;
-
         if (e.key === 'Enter') {
             onEnterDown(e);
-            console.log(block)
         }
 
         if (e.key === 'Backspace') {
@@ -52,7 +48,10 @@ const BaseBlock = memo((props: BaseBlockProps) => {
         }
 
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            onArrowKeyDown(e);
+            handleVerticalArrow(e);
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            handleHorizontalArrow(e);
         }
     };
 

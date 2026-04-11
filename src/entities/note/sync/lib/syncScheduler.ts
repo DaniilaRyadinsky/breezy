@@ -9,7 +9,7 @@ export const startSyncScheduler = (intervalMs = 5000) => {
   intervalId = window.setInterval(() => {
     const { queue, isRunning } = useSyncStore.getState();
 
-    console.log("Sync Scheduler: Checking queue...", { queue, isRunning });
+    // console.log("Sync Scheduler: Checking queue...", { queue, isRunning });
 
     const hasPending = queue.some((op) => op.status === "pending");
 
