@@ -35,7 +35,9 @@ export const insertBlock = async (type: BlockType, afterId: string) => {
         block_id: result.newBlock.id,
       },
       status: "pending",
-      retryCount: 0
+      retryCount: 0,
+      createdAt: Date.now(),
+      nextAttemptAt: Date.now(),
     };
 
     return {
@@ -50,7 +52,7 @@ export const insertBlock = async (type: BlockType, afterId: string) => {
   if (!syncOperation || !createdBlockId) return null;
 
   useSyncStore.getState().enqueue(syncOperation);
-  void processSyncQueue();
+  // void processSyncQueue();
 
   return createdBlockId;
 };
@@ -79,6 +81,8 @@ export const deleteBlock = async (blockId: string) => {
       },
       status: "pending",
       retryCount: 0,
+      createdAt: Date.now(),
+      nextAttemptAt: Date.now(),
     };
 
     return {
@@ -88,7 +92,7 @@ export const deleteBlock = async (blockId: string) => {
 
   if (syncOperation) {
     useSyncStore.getState().enqueue(syncOperation);
-    void processSyncQueue();
+    // void processSyncQueue();
   }
 
   return focusTargetId;
@@ -153,6 +157,8 @@ export const applyTextBlockOperations = (
       payload: operation,
       status: "pending",
       retryCount: 0,
+      createdAt: Date.now(),
+      nextAttemptAt: Date.now(),
     }));
 
     return {
@@ -162,6 +168,6 @@ export const applyTextBlockOperations = (
 
   if (syncOperations) {
     useSyncStore.getState().listQueue(syncOperations);
-    void processSyncQueue();
+    // void processSyncQueue();
   }
 };

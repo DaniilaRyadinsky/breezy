@@ -3,19 +3,22 @@ import { processSyncQueue } from "./processSyncQueue";
 
 let intervalId: number | null = null;
 
-export const startSyncScheduler = (intervalMs = 5000) => {
+export const startSyncScheduler = (
+  intervalMs = 5000,
+  batchSize = 4
+) => {
   if (intervalId !== null) return;
 
   intervalId = window.setInterval(() => {
-    const { queue, isRunning } = useSyncStore.getState();
+    const { isRunning, queue } = useSyncStore.getState();
 
-    // console.log("Sync Scheduler: Checking queue...", { queue, isRunning });
-
-    const hasPending = queue.some((op) => op.status === "pending");
+    const hasPending = queue.some(
+      (op) => op.status === "pending" && op.nextAttemptAt <= Date.now()
+    );
 
     if (!isRunning && hasPending) {
-      void processSyncQueue();
-    } 
+      void processSyncQueue(batchSize);
+    }
   }, intervalMs);
 };
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom';
-import { userStore } from '../../entities/user/lib/userStore';
+import { userStore } from '@/entities/user';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const status = userStore((state) => state.status);

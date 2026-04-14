@@ -5,10 +5,10 @@ import type { BlockType } from '@/entities/note/model/blockTypes';
 import { memo } from 'react';
 import { useActiveNoteStore } from '@/entities/note/model/store';
 import { useBlockRegistry,  useBlockNavigation} from '@/features/navigation';
-import { useBlockCreateDelete } from './useBlockCreateDelete';
 import { getCaretOffsetInElement } from '@/shared/lib/utils';
 
 import styles from './BaseBlock.module.css'
+import { useBlockCreateDelete } from '@/features/contenteditable';
 
 type BaseBlockProps = {
     id: string;

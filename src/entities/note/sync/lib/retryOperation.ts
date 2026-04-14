@@ -5,7 +5,12 @@ export const retryOperation = async (opId: string) => {
   useSyncStore.setState((state) => ({
     queue: state.queue.map((op) =>
       op.opId === opId
-        ? { ...op, status: "pending", lastError: undefined }
+        ? {
+            ...op,
+            status: "pending",
+            lastError: undefined,
+            nextAttemptAt: Date.now(),
+          }
         : op
     ),
   }));
@@ -17,7 +22,12 @@ export const retryAllOperations = async () => {
   useSyncStore.setState((state) => ({
     queue: state.queue.map((op) =>
       op.status === "error"
-        ? { ...op, status: "pending", lastError: undefined }
+        ? {
+            ...op,
+            status: "pending",
+            lastError: undefined,
+            nextAttemptAt: Date.now(),
+          }
         : op
     ),
   }));

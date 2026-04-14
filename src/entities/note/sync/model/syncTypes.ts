@@ -8,4 +8,6 @@ export type SyncType = {
   retryCount: number;
   lastError?: string;
   payload: BlockOperation;
+  createdAt: number;
+  nextAttemptAt: number;
 }
