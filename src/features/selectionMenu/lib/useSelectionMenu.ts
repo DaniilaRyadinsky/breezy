@@ -3,7 +3,7 @@ import {
   EditorSelection,
   getEditorSelection,
   setEditorSelection,
-} from "./lib/editorSelection";
+} from "../../contenteditable/lib/editorSelection";
 
 type SelectionMenuPosition = {
   top: number;
@@ -27,7 +27,7 @@ export const useSelectionMenu = (
   editorRef: RefObject<HTMLElement | null>,
   options: UseSelectionMenuOptions = {}
 ): UseSelectionMenuResult => {
-  const { verticalOffset = 8 } = options;
+  const { verticalOffset = 16 } = options;
 
   const [menuPosition, setMenuPosition] = useState<SelectionMenuPosition>(null);
   const savedSelectionRef = useRef<EditorSelection | null>(null);

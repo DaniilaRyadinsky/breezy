@@ -12,7 +12,6 @@ import {
 import {
   buildApplyStyleOperations,
   buildDeleteSelectionOperations,
-  getBlockSegments,
   getSegmentsLength,
   isRichTextBlock,
 } from "./lib/documentRichText";
@@ -202,7 +201,7 @@ export const useRichTextEditor = (
           const currentBlock = note.blocksById[normalized.start.blockId];
           if (!currentBlock || !isRichTextBlock(currentBlock)) return;
 
-          const fullTextLength = getSegmentsLength(getBlockSegments(currentBlock));
+          const fullTextLength = getSegmentsLength(currentBlock.data.text_data);
           if (normalized.start.offset >= fullTextLength) return;
 
           commitOperations(

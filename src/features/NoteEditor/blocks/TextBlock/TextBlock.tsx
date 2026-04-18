@@ -4,7 +4,7 @@ import TextSegment from "../TextSegment/TextSegment";
 
 type TextBlockProps = {
   id: string;
-  data: { text: TextSegmentType[] };
+  data: { text_data: TextSegmentType[] };
 };
 
 export const TextBlock = ({ id, data }: TextBlockProps) => {
@@ -13,7 +13,7 @@ export const TextBlock = ({ id, data }: TextBlockProps) => {
       id={id}
       className={styles.text}
     >
-      {data.text?.map((item, index) => (
+      {data.text_data?.map((item, index) => (
         <TextSegment key={`${id}-${index}`} {...item} />
       ))}
     </p>

@@ -1,7 +1,6 @@
 import { BlocksRegistryProvider, useBlocksRegistry } from "@/features/navigation";
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { BlockType } from "@/entities/note/model/blockTypes";
-import { insertBlock, deleteBlock, applyDocumentOperations } from "@/entities/note/model/storeOperations";
+import { applyDocumentOperations } from "@/entities/note/model/storeOperations";
 import styles from "./NoteEditor.module.css";
 import TableContents from "./ui/TableContents/TableContents";
 import clsx from "clsx";
@@ -11,7 +10,8 @@ import { useRichTextEditor } from "../contenteditable";
 import { useRef, useCallback } from "react";
 import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
 import { useBlockStructureEditor } from "../contenteditable/useBlockStructureEditor";
-import { useSelectionMenu } from "../contenteditable/useSelectionMenu";
+import { useSelectionMenu } from "../selectionMenu/lib/useSelectionMenu";
+import { Menu, MenuItem } from "@mui/material";
 
 const NoteEditorContent = () => {
   const blockOrder = useActiveNoteStore((state) => state.activeNote?.blockOrder);
@@ -30,7 +30,7 @@ const NoteEditorContent = () => {
     [registerEditorRoot]
   );
 
-  const {applyStyleToSelection} = useRichTextEditor(editorRef, applyDocumentOperations);
+  const { applyStyleToSelection } = useRichTextEditor(editorRef, applyDocumentOperations);
 
   const { menuPosition, isOpen, closeMenu, restoreSelection } = useSelectionMenu(editorRef);
 
@@ -54,6 +54,66 @@ const NoteEditorContent = () => {
           {blockOrder?.map((id) => (
             <BaseBlock key={id} id={id} />
           ))}
+
+          <Menu
+            open={isOpen}
+            onClose={closeMenu}
+            anchorReference="anchorPosition"
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            anchorPosition={
+              menuPosition
+                ? { top: menuPosition.top, left: menuPosition.left }
+                : undefined
+            }
+          >
+            <MenuItem
+              onClick={() => {
+                restoreSelection();
+                applyStyleToSelection("default");
+                closeMenu();
+              }}
+            >
+              Default
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                restoreSelection();
+                applyStyleToSelection("bold");
+                closeMenu();
+              }}
+            >
+              Bold
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                restoreSelection();
+                applyStyleToSelection("italic");
+                closeMenu();
+              }}
+            >
+              Italic
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                restoreSelection();
+                applyStyleToSelection("underline");
+                closeMenu();
+              }}
+            >
+              Underline
+            </MenuItem>
+          </Menu>
+
         </div>
       </div>
 

@@ -21,7 +21,7 @@ export type BaseBlockType = {
 export type TextBlockType = BaseBlockType & {
   type: "text",
   data: {
-    text: TextSegmentType[],
+    text_data: TextSegmentType[],
   }
 }
 

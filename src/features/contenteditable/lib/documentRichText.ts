@@ -29,17 +29,6 @@ export function isRichTextBlock(block: Block): block is RichTextBlock {
   );
 }
 
-export function getBlockSegments(block: RichTextBlock): TextSegmentType[] {
-  switch (block.type) {
-    case "text":
-      return block.data.text;
-    case "header":
-      return block.data.text_data;
-    case "list":
-      return block.data.text_data;
-  }
-}
-
 export function getSegmentsLength(segments: TextSegmentType[]): number {
   return segments.reduce((sum, seg) => sum + seg.string.length, 0);
 }
@@ -102,8 +91,8 @@ export function buildDeleteSelectionOperations(params: {
     };
   }
 
-  const startSegments = getBlockSegments(startBlock);
-  const endSegments = getBlockSegments(endBlock);
+  const startSegments = startBlock.data.text_data;
+  const endSegments = endBlock.data.text_data;
 
   const startLength = getSegmentsLength(startSegments);
   const endLength = getSegmentsLength(endSegments);
@@ -202,7 +191,7 @@ export function buildApplyStyleOperations(params: {
 
     if (!block || !isRichTextBlock(block)) continue;
 
-    const len = getSegmentsLength(getBlockSegments(block));
+    const len = getSegmentsLength(block.data.text_data);
 
     const start = i === startIndex ? selection.start.offset : 0;
     const end = i === endIndex ? selection.end.offset : len;
