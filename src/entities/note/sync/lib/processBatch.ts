@@ -57,6 +57,7 @@ export const processBatch = async (batch: SyncType[]) => {
     batch.map(async (op) => {
       try {
         await executeSyncOperation(op);
+        console.log(`Operation ${op.opId}`);
         handleSuccess(op.opId);
         console.log(`Operation ${op.payload.op} completed successfully`);
       } catch (e) {

@@ -52,7 +52,6 @@ export const insertBlock = async (type: BlockType, afterId: string) => {
   if (!syncOperation || !createdBlockId) return null;
 
   useSyncStore.getState().enqueue(syncOperation);
-  // void processSyncQueue();
 
   return createdBlockId;
 };
@@ -92,7 +91,6 @@ export const deleteBlock = async (blockId: string) => {
 
   if (syncOperation) {
     useSyncStore.getState().enqueue(syncOperation);
-    // void processSyncQueue();
   }
 
   return focusTargetId;
@@ -120,10 +118,6 @@ export const updateBlockContent = async <T extends BlockType>(
 
   });
 
-  // if (syncOperation) {
-  //   useSyncStore.getState().enqueue(syncOperation);
-  //   void processSyncQueue();
-  // }
 }
 
 const flushPendingTextOps = (

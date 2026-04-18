@@ -9,7 +9,7 @@ export const initBlock = (type: BlockType): Block => {
         type: 'text',
         pos: 0,
         data: {
-          text: [{style: 'default', string: ''}],
+          text_data: [{style: 'default', string: ''}],
         }
       } as Block
     case 'header':

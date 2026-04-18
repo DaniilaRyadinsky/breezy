@@ -54,7 +54,7 @@ export const compactPendingQueue = (force = false) => {
       inserted = true;
     }
   }
-  console.log("queue length after compacting:", nextQueue.length);
+  console.log("queue length after compacting:", nextQueue);
 
   store.setQueue(nextQueue);
 };
@@ -101,6 +101,7 @@ export const processSyncQueue = async (batchSize = 4) => {
 
       compactPendingQueue(true);
     }
+
   } finally {
     useSyncStore.getState().setRunning(false);
   }
