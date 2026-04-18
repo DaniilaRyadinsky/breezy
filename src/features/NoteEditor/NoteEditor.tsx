@@ -10,11 +10,13 @@ import { useRichTextEditor } from "../contenteditable";
 import { useRef, useCallback } from "react";
 import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
 import { useBlockStructureEditor } from "../contenteditable/useBlockStructureEditor";
-import { useSelectionMenu } from "../selectionMenu/lib/useSelectionMenu";
-import { Menu, MenuItem } from "@mui/material";
+import { SelectionMenu } from "../selectionMenu/ui/SelectionMenu";
+import { BlockType } from "@/entities/note/model/blockTypes";
 
 const NoteEditorContent = () => {
-  const blockOrder = useActiveNoteStore((state) => state.activeNote?.blockOrder);
+  const activeNote = useActiveNoteStore((state) => state.activeNote);
+  const blockOrder = activeNote?.blockOrder;
+  const blocksById = activeNote?.blocksById ?? {};
   const isSidebarOpen = useAppStore((s) => s.isSidebarOpen);
 
   const titleRef = useRef<HTMLInputElement>(null);
@@ -30,11 +32,27 @@ const NoteEditorContent = () => {
     [registerEditorRoot]
   );
 
-  const { applyStyleToSelection } = useRichTextEditor(editorRef, applyDocumentOperations);
-
-  const { menuPosition, isOpen, closeMenu, restoreSelection } = useSelectionMenu(editorRef);
+  const { applyStyleToSelection } = useRichTextEditor(
+    editorRef,
+    applyDocumentOperations
+  );
 
   useBlockStructureEditor(editorRef);
+
+  const getBlockTypeById = useCallback(
+    (blockId: string): BlockType | null => {
+      const block = blocksById[blockId];
+      if (!block) return null;
+
+      return block.type;
+    },
+    [blocksById]
+  );
+
+  const handleChangeBlockType = useCallback((type: BlockType) => {
+    console.log("change block type", type);
+    // здесь потом будет логика изменения типа текущего блока
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -49,72 +67,20 @@ const NoteEditorContent = () => {
           ref={setEditorRef}
           contentEditable
           suppressContentEditableWarning
+          tabIndex={0}
           className={styles.blocks_root}
         >
           {blockOrder?.map((id) => (
             <BaseBlock key={id} id={id} />
           ))}
-
-          <Menu
-            open={isOpen}
-            onClose={closeMenu}
-            anchorReference="anchorPosition"
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            anchorPosition={
-              menuPosition
-                ? { top: menuPosition.top, left: menuPosition.left }
-                : undefined
-            }
-          >
-            <MenuItem
-              onClick={() => {
-                restoreSelection();
-                applyStyleToSelection("default");
-                closeMenu();
-              }}
-            >
-              Default
-            </MenuItem>
-
-            <MenuItem
-              onClick={() => {
-                restoreSelection();
-                applyStyleToSelection("bold");
-                closeMenu();
-              }}
-            >
-              Bold
-            </MenuItem>
-
-            <MenuItem
-              onClick={() => {
-                restoreSelection();
-                applyStyleToSelection("italic");
-                closeMenu();
-              }}
-            >
-              Italic
-            </MenuItem>
-
-            <MenuItem
-              onClick={() => {
-                restoreSelection();
-                applyStyleToSelection("underline");
-                closeMenu();
-              }}
-            >
-              Underline
-            </MenuItem>
-          </Menu>
-
         </div>
+
+        <SelectionMenu
+          editorRef={editorRef}
+          applyStyleToSelection={applyStyleToSelection}
+          getBlockTypeById={getBlockTypeById}
+          onChangeBlockType={handleChangeBlockType}
+        />
       </div>
 
       <TableContents />

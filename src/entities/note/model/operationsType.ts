@@ -14,6 +14,9 @@ export type CreateBlockOp = BaseOperation<
 export type DeleteBlockOp = BaseOperation<
   "delete_block", {}>;
 
+export type ChangeBlockTypeOp = BaseOperation<
+  "change_block_type", { new_type: BlockType; }>;
+
 /* -------------------- Общие текстовые операции -------------------- */
 
 export type InsertTextOp = BaseOperation<
@@ -112,4 +115,5 @@ export type AnyBlockOperation = BlockOperationByType[BlockType];
 export type BlockOperation =
   | CreateBlockOp
   | DeleteBlockOp
+  | ChangeBlockTypeOp
   | AnyBlockOperation;

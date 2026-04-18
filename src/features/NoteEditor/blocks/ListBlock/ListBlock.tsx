@@ -2,12 +2,7 @@ import type { ListBlockType } from '@/entities/note/model/blockTypes';
 import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './ListBlock.module.css'
 
-
-type ListBlockProps = ListBlockType & {
-    editableRef: (node: HTMLElement | null) => void;
-}
-
-const ListBlock = ({ id, data, editableRef }: ListBlockProps) => {
+const ListBlock = ({ id, data }: ListBlockType) => {
   const {
     text_data,
     level,
@@ -37,7 +32,7 @@ const ListBlock = ({ id, data, editableRef }: ListBlockProps) => {
       <div className={styles.list_sign}>
         {GetSign()}
       </div>
-      <p id={id} className={styles.text} contentEditable ref={editableRef}>
+      <p id={id} className={styles.text} >
         {text_data.map(item => <TextSegmentType {...item} />)}
       </p>
     </div>

@@ -1,13 +1,8 @@
 import styles from "./TextBlock.module.css";
-import { TextSegmentType } from "@/entities/note/model/blockTypes";
+import { TextBlockType } from "@/entities/note/model/blockTypes";
 import TextSegment from "../TextSegment/TextSegment";
 
-type TextBlockProps = {
-  id: string;
-  data: { text_data: TextSegmentType[] };
-};
-
-export const TextBlock = ({ id, data }: TextBlockProps) => {
+export const TextBlock = ({ id, data }: TextBlockType) => {
   return (
     <p
       id={id}

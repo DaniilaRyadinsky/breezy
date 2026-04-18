@@ -3,16 +3,11 @@ import { HeaderBlockType } from '@/entities/note/model/blockTypes'
 import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './HeaderBlock.module.css'
 
-type HeaderBlockProps = HeaderBlockType & {
-  editableRef: (node: HTMLElement | null) => void;
-}
-
-const HeaderBlock = ({ id, data, editableRef }: HeaderBlockProps) => {
+const HeaderBlock = ({ id, data }: HeaderBlockType) => {
   const { level, text_data } = data;
 
   return (
     <h2
-      ref={editableRef}
       id={id} className={clsx([styles.text], {
         [styles.h1]: (level === 1),
         [styles.h2]: (level === 2),

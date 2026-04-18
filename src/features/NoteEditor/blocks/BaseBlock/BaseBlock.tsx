@@ -3,14 +3,12 @@ import ListBlock from '../ListBlock/ListBlock';
 import HeaderBlock from '../HeaderBlock/HeaderBlock';
 import { memo, useCallback } from 'react';
 import { useActiveNoteStore } from '@/entities/note/model/store';
-
-import styles from './BaseBlock.module.css'
 import { useBlocksRegistry } from '@/features/navigation';
+import styles from './BaseBlock.module.css'
 
 type BaseBlockProps = {
     id: string;
 };
-
 
 export const BaseBlock = memo((props: BaseBlockProps) => {
     const block = useActiveNoteStore((state) =>
@@ -30,15 +28,15 @@ export const BaseBlock = memo((props: BaseBlockProps) => {
     }, [props.id, registerBlock, unregisterBlock]);
 
     return (
-            <div
-                className={styles.container}
-                data-block-id={props.id}
-                data-block-type={block.type}
-                ref={setBlockRef}
-            >
-                {block.type === "text" && <TextBlock id={block.id} data={block.data} />}
-                {/* {block.type === "list" && <ListBlock id={block.id} data={block.data} />}
-      {block.type === "header" && <HeaderBlock id={block.id} data={block.data} />} */}
-            </div>
+        <div
+            className={styles.container}
+            data-block-id={props.id}
+            data-block-type={block.type}
+            ref={setBlockRef}
+        >
+            {block.type === "text" && <TextBlock {...block} />}
+            {block.type === "list" && <ListBlock {...block} />}
+            {block.type === "header" && <HeaderBlock {...block} />}
+        </div>
     );
 });

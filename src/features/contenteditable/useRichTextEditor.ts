@@ -4,6 +4,7 @@ import { useActiveNoteStore } from "@/entities/note/model/store";
 import { RefObject, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import {
   PendingEditorSelection,
+  EditorSelection,
   getEditorSelection,
   isCollapsedEditorSelection,
   normalizeEditorSelection,
@@ -25,6 +26,10 @@ type UseRichTextEditorResult = {
   applyStyleToSelection: (style: TextStyle) => void;
 };
 
+type ActiveNote = NonNullable<
+  ReturnType<typeof useActiveNoteStore.getState>["activeNote"]
+>;
+
 export const useRichTextEditor = (
   editorRef: RefObject<HTMLElement | null>,
   onOperations: ApplyDocumentOperations
@@ -44,6 +49,24 @@ export const useRichTextEditor = (
       onOperations(noteId, operations);
     },
     [onOperations]
+  );
+
+  const deleteSelection = useCallback(
+    (note: ActiveNote, selection: EditorSelection) => {
+      const result = buildDeleteSelectionOperations({
+        noteId: note.id,
+        note,
+        selection,
+      });
+
+      if (!result || result.operations.length === 0) {
+        return false;
+      }
+
+      commitOperations(result.operations, result.nextSelection);
+      return true;
+    },
+    [commitOperations]
   );
 
   useLayoutEffect(() => {
@@ -83,6 +106,26 @@ export const useRichTextEditor = (
   useEffect(() => {
     const root = editorRef.current;
     if (!root) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.isComposing) return;
+      if (e.key !== "Backspace" && e.key !== "Delete") return;
+
+      const note = useActiveNoteStore.getState().activeNote;
+      if (!note) return;
+
+      const selection = getEditorSelection(root);
+      if (!selection) return;
+
+      const normalized = normalizeEditorSelection(selection, note.blockOrder);
+
+      if (isCollapsedEditorSelection(normalized)) {
+        return;
+      }
+
+      e.preventDefault();
+      deleteSelection(note, normalized);
+    };
 
     const handleBeforeInput = (e: InputEvent) => {
       if (e.isComposing) return;
@@ -132,101 +175,95 @@ export const useRichTextEditor = (
           });
 
           commitOperations(ops, {
-            start: { blockId: insertBlockId, offset: insertOffset + text.length },
-            end: { blockId: insertBlockId, offset: insertOffset + text.length },
+            start: {
+              blockId: insertBlockId,
+              offset: insertOffset + text.length,
+            },
+            end: {
+              blockId: insertBlockId,
+              offset: insertOffset + text.length,
+            },
           });
 
           break;
         }
 
-        case "deleteContentBackward": {
-          e.preventDefault();
-
-          if (!isCollapsed) {
-            const deleteResult = buildDeleteSelectionOperations({
-              noteId: note.id,
-              note,
-              selection: normalized,
-            });
-
-            if (!deleteResult) return;
-            commitOperations(deleteResult.operations, deleteResult.nextSelection);
-            return;
-          }
-
-          if (normalized.start.offset === 0) return;
-
-          commitOperations(
-            [
-              {
-                op: "delete_range",
-                note_id: note.id,
-                block_id: normalized.start.blockId,
-                data: {
-                  start: normalized.start.offset - 1,
-                  end: normalized.start.offset,
-                },
-              },
-            ],
-            {
-              start: {
-                blockId: normalized.start.blockId,
-                offset: normalized.start.offset - 1,
-              },
-              end: {
-                blockId: normalized.start.blockId,
-                offset: normalized.start.offset - 1,
-              },
-            }
-          );
-
-          break;
-        }
-
+        case "deleteByCut":
+        case "deleteContentBackward":
         case "deleteContentForward": {
-          e.preventDefault();
-
           if (!isCollapsed) {
-            const deleteResult = buildDeleteSelectionOperations({
-              noteId: note.id,
-              note,
-              selection: normalized,
-            });
-
-            if (!deleteResult) return;
-            commitOperations(deleteResult.operations, deleteResult.nextSelection);
+            e.preventDefault();
+            deleteSelection(note, normalized);
             return;
           }
 
-          const currentBlock = note.blocksById[normalized.start.blockId];
-          if (!currentBlock || !isRichTextBlock(currentBlock)) return;
+          if (e.inputType === "deleteContentBackward") {
+            e.preventDefault();
 
-          const fullTextLength = getSegmentsLength(currentBlock.data.text_data);
-          if (normalized.start.offset >= fullTextLength) return;
+            if (normalized.start.offset === 0) return;
 
-          commitOperations(
-            [
-              {
-                op: "delete_range",
-                note_id: note.id,
-                block_id: normalized.start.blockId,
-                data: {
-                  start: normalized.start.offset,
-                  end: normalized.start.offset + 1,
+            commitOperations(
+              [
+                {
+                  op: "delete_range",
+                  note_id: note.id,
+                  block_id: normalized.start.blockId,
+                  data: {
+                    start: normalized.start.offset - 1,
+                    end: normalized.start.offset,
+                  },
                 },
-              },
-            ],
-            {
-              start: {
-                blockId: normalized.start.blockId,
-                offset: normalized.start.offset,
-              },
-              end: {
-                blockId: normalized.start.blockId,
-                offset: normalized.start.offset,
-              },
-            }
-          );
+              ],
+              {
+                start: {
+                  blockId: normalized.start.blockId,
+                  offset: normalized.start.offset - 1,
+                },
+                end: {
+                  blockId: normalized.start.blockId,
+                  offset: normalized.start.offset - 1,
+                },
+              }
+            );
+
+            return;
+          }
+
+          if (e.inputType === "deleteContentForward") {
+            e.preventDefault();
+
+            const currentBlock = note.blocksById[normalized.start.blockId];
+            if (!currentBlock || !isRichTextBlock(currentBlock)) return;
+
+            const fullTextLength = getSegmentsLength(currentBlock.data.text_data);
+            if (normalized.start.offset >= fullTextLength) return;
+
+            commitOperations(
+              [
+                {
+                  op: "delete_range",
+                  note_id: note.id,
+                  block_id: normalized.start.blockId,
+                  data: {
+                    start: normalized.start.offset,
+                    end: normalized.start.offset + 1,
+                  },
+                },
+              ],
+              {
+                start: {
+                  blockId: normalized.start.blockId,
+                  offset: normalized.start.offset,
+                },
+                end: {
+                  blockId: normalized.start.blockId,
+                  offset: normalized.start.offset,
+                },
+              }
+            );
+
+            return;
+          }
 
           break;
         }
@@ -282,14 +319,16 @@ export const useRichTextEditor = (
       });
     };
 
+    root.addEventListener("keydown", handleKeyDown);
     root.addEventListener("beforeinput", handleBeforeInput);
     root.addEventListener("paste", handlePaste);
 
     return () => {
+      root.removeEventListener("keydown", handleKeyDown);
       root.removeEventListener("beforeinput", handleBeforeInput);
       root.removeEventListener("paste", handlePaste);
     };
-  }, [editorRef, commitOperations]);
+  }, [editorRef, commitOperations, deleteSelection]);
 
   return {
     applyStyleToSelection,
