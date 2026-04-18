@@ -105,7 +105,7 @@ export const applyRichTextOperationsToTextData = (
   data: TextBlockType["data"],
   operations: RichTextOperation[]
 ): TextBlockType["data"] => {
-  let nextText = ensureSegments(Array.isArray(data?.text_data) ? data.text_data : []);
+  let nextText = ensureSegments(Array.isArray(data?.text_data?.text) ? data.text_data.text : []);
 
   for (const operation of operations) {
     switch (operation.op) {
@@ -143,6 +143,6 @@ export const applyRichTextOperationsToTextData = (
 
   return {
     ...data,
-    text_data: normalizeSegments(nextText),
+    text_data:{ text: normalizeSegments(nextText) },
   };
 };

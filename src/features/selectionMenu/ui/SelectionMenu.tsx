@@ -1,5 +1,6 @@
 import {
   Popover,
+  Popper,
   Paper,
   Stack,
   IconButton,
@@ -11,8 +12,9 @@ import {
   ListItemText,
   Divider,
   Tooltip,
+  ClickAwayListener,
 } from "@mui/material";
-import React, { RefObject, useMemo, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useState } from "react";
 import { useSelectionMenu } from "../lib/useSelectionMenu";
 import { BlockType, TextStyle } from "@/entities/note/model/blockTypes";
 import type { LucideIcon } from "lucide-react";
@@ -84,6 +86,12 @@ export const SelectionMenu = ({
 
   const [blockMenuAnchorEl, setBlockMenuAnchorEl] = useState<HTMLElement | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setBlockMenuAnchorEl(null);
+    }
+  }, [isOpen]);
+
   const isBlockMenuOpen = Boolean(blockMenuAnchorEl) && isOpen;
 
   const currentBlock = useMemo(() => {
@@ -115,9 +123,11 @@ export const SelectionMenu = ({
     e.preventDefault();
     e.stopPropagation();
 
+    const anchorEl = e.currentTarget;
+
     setBlockMenuAnchorEl((prev) => {
-      if (prev) return null;
-      return e.currentTarget;
+      if (prev === anchorEl) return null;
+      return anchorEl;
     });
   };
 
@@ -156,6 +166,10 @@ export const SelectionMenu = ({
           paper: {
             onMouseDown: (e: React.MouseEvent) => {
               e.preventDefault();
+              e.stopPropagation();
+            },
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
             },
           },
         }}
@@ -170,7 +184,10 @@ export const SelectionMenu = ({
           }}
         >
           <ButtonBase
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             onClick={handleToggleBlockMenu}
             sx={{
               px: 1,
@@ -193,7 +210,10 @@ export const SelectionMenu = ({
               <Tooltip key={style} title={label}>
                 <IconButton
                   size="small"
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
                   onClick={() => handleApplyStyle(style)}
                 >
                   <Icon size={16} />
@@ -204,51 +224,51 @@ export const SelectionMenu = ({
         </Paper>
       </Popover>
 
-      <Popover
+      <Popper
         open={isBlockMenuOpen}
         anchorEl={blockMenuAnchorEl}
-        onClose={handleCloseBlockMenu}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
-        }}
-        disableAutoFocus
-        disableEnforceFocus
-        disableRestoreFocus
-        hideBackdrop
-        slotProps={{
-          paper: {
-            sx: {
-              mt: 0.5,
-            },
-            onMouseDown: (e: React.MouseEvent) => {
-              e.preventDefault();
+        placement="bottom-start"
+        modifiers={[
+          {
+            name: "offset",
+            options: {
+              offset: [0, 6],
             },
           },
+        ]}
+        sx={{
+          zIndex: 1400,
         }}
       >
-        <List
-          dense
-          sx={{
-            minWidth: 220,
-            py: 0.5,
-          }}
-        >
-          {availableBlockOptions.map((item) => (
-            <BlockListItem
-              key={item.type}
-              primary={item.label}
-              Icon={item.icon}
-              selected={item.type === currentBlockType}
-              onClick={() => handleChangeBlock(item.type)}
-            />
-          ))}
-        </List>
-      </Popover>
+        <ClickAwayListener onClickAway={handleCloseBlockMenu}>
+          <Paper
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            sx={{
+              minWidth: 220,
+              py: 0.5,
+              borderRadius: 2,
+            }}
+          >
+            <List dense>
+              {availableBlockOptions.map((item) => (
+                <BlockListItem
+                  key={item.type}
+                  primary={item.label}
+                  Icon={item.icon}
+                  selected={item.type === currentBlockType}
+                  onClick={() => handleChangeBlock(item.type)}
+                />
+              ))}
+            </List>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
     </>
   );
 };

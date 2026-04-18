@@ -8,7 +8,7 @@ export const TextBlock = ({ id, data }: TextBlockType) => {
       id={id}
       className={styles.text}
     >
-      {data.text_data?.map((item, index) => (
+      {data.text_data?.text.map((item, index) => (
         <TextSegment key={`${id}-${index}`} {...item} />
       ))}
     </p>

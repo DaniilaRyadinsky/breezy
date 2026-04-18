@@ -33,7 +33,7 @@ const ListBlock = ({ id, data }: ListBlockType) => {
         {GetSign()}
       </div>
       <p id={id} className={styles.text} >
-        {text_data.map(item => <TextSegmentType {...item} />)}
+        {text_data.text.map(item => <TextSegmentType {...item} />)}
       </p>
     </div>
   );

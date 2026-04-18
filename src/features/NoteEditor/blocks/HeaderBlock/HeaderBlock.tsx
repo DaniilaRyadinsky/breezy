@@ -15,7 +15,7 @@ const HeaderBlock = ({ id, data }: HeaderBlockType) => {
         [styles.h4]: (level === 4),
       })
       }>
-      {text_data.map(item => <TextSegmentType {...item} />)}
+      {text_data.text.map(item => <TextSegmentType {...item} />)}
     </h2>
   )
 }

@@ -15,6 +15,7 @@
     overflow-y: auto;
     scrollbar-gutter: stable;
     transition: width 0.3s;
+    caret-color: #000;
 }
 
 .note_editor:focus {

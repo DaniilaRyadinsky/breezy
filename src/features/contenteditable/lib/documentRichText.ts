@@ -91,8 +91,8 @@ export function buildDeleteSelectionOperations(params: {
     };
   }
 
-  const startSegments = startBlock.data.text_data;
-  const endSegments = endBlock.data.text_data;
+  const startSegments = startBlock.data.text_data.text;
+  const endSegments = endBlock.data.text_data.text;
 
   const startLength = getSegmentsLength(startSegments);
   const endLength = getSegmentsLength(endSegments);
@@ -191,7 +191,7 @@ export function buildApplyStyleOperations(params: {
 
     if (!block || !isRichTextBlock(block)) continue;
 
-    const len = getSegmentsLength(block.data.text_data);
+    const len = getSegmentsLength(block.data.text_data.text);
 
     const start = i === startIndex ? selection.start.offset : 0;
     const end = i === endIndex ? selection.end.offset : len;

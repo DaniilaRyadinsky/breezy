@@ -21,14 +21,18 @@ export type BaseBlockType = {
 export type TextBlockType = BaseBlockType & {
   type: "text",
   data: {
-    text_data: TextSegmentType[],
+    text_data: {
+      text: TextSegmentType[]
+    },
   }
 }
 
 export type ListBlockType = BaseBlockType & {
   type: "list",
   data: {
-    text_data: TextSegmentType[],
+     text_data: {
+      text: TextSegmentType[]
+    },
     level: ListLevel,
     type: ListType,
     value: number,
@@ -38,7 +42,9 @@ export type ListBlockType = BaseBlockType & {
 export type HeaderBlockType = BaseBlockType & {
   type: "header",
   data: {
-    text_data: TextSegmentType[],
+     text_data: {
+      text: TextSegmentType[]
+    },
     level: HeaderLevel,
   }
 }

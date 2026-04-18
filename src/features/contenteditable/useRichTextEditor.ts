@@ -235,7 +235,7 @@ export const useRichTextEditor = (
             const currentBlock = note.blocksById[normalized.start.blockId];
             if (!currentBlock || !isRichTextBlock(currentBlock)) return;
 
-            const fullTextLength = getSegmentsLength(currentBlock.data.text_data);
+            const fullTextLength = getSegmentsLength(currentBlock.data.text_data.text);
             if (normalized.start.offset >= fullTextLength) return;
 
             commitOperations(

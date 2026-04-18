@@ -45,7 +45,7 @@ export function getPlainTextFromBlock(block: Block): string {
     case "text":
     case "header":
     case "list":
-      return textSegmentsToString(block.data.text_data);
+      return textSegmentsToString(block.data.text_data.text);
 
     case "quote":
     case "code":
@@ -65,7 +65,7 @@ export function getTextSegmentsFromBlock(block: Block): TextSegmentType[] {
     case "text":
     case "header":
     case "list":
-      return cloneTextSegments(block.data.text_data);
+      return cloneTextSegments(block.data.text_data.text);
 
     case "quote":
     case "code":
@@ -102,7 +102,7 @@ export function convertBlockType(
         pos: block.pos,
         type: "text",
         data: {
-          text_data: textData,
+          text_data: { text: textData },
         },
       };
 
@@ -112,7 +112,7 @@ export function convertBlockType(
         pos: block.pos,
         type: "header",
         data: {
-          text_data: textData,
+          text_data: { text: textData },
           level: block.type === "header" ? block.data.level : 1,
         },
       };
@@ -123,7 +123,7 @@ export function convertBlockType(
         pos: block.pos,
         type: "list",
         data: {
-          text_data: textData,
+          text_data: { text: textData },
           level: block.type === "list" ? block.data.level : 1,
           type: block.type === "list" ? block.data.type : "unordered",
           value: block.type === "list" ? block.data.value : 1,
