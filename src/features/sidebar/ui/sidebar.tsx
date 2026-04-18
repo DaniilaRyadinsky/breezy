@@ -1,16 +1,14 @@
 import styles from './sidebar.module.css'
-import { Button } from '../../../shared/ui/Button'
+import { Button } from '@/shared/ui/Button'
 import SidebarItem from './sidebarItem/SidebarItem'
 import { useState } from 'react'
 import Notes from './Panels/Notes'
 import clsx from 'clsx'
-import { NotesIcon } from '../../../shared/ui/icons/NotesIcon'
-import { TagsIcon } from '../../../shared/ui/icons/TagsIcon'
-import { ArchiveIcon } from '../../../shared/ui/icons/ArchiveIcon'
-import { BasketIcon } from '../../../shared/ui/icons/BasketIcon'
-import { PenIcon } from '../../../shared/ui/icons/PenIcon'
-import { useActiveNoteStore } from '../../../entities/note/model/store'
-import { useAppStore } from '../../../app/model/AppStore'
+import { useActiveNoteStore } from '@/entities/note/model/store'
+import { useAppStore } from '@/app/model/AppStore'
+import {ArchiveIcon, CreateIcon, NotesIcon} from '@/shared/assets/icons'
+import { BasketIcon } from '@/shared/ui/icons/BasketIcon'
+import { TagsIcon } from '@/shared/ui/icons/TagsIcon'
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 
@@ -40,12 +38,12 @@ export const Sidebar = () => {
       <div className={styles.left_container}>
 
         <Button mode='fab' onClick={() => handleCreateClick()}>
-          <PenIcon />
+          <CreateIcon color='#fff'/>
         </Button>
 
         <div className={styles.sidebar_list}>
           <SidebarItem label='Заметки' isActive={mode === 'notes'} onClick={() => handleChangeModeClick('notes')}>
-            <NotesIcon isActive={mode === 'notes'} />
+            <NotesIcon color={mode==='notes' ? '#fff':'#000'}  />
           </SidebarItem>
 
           <SidebarItem label='Теги' isActive={mode === 'tags'} onClick={() => handleChangeModeClick('tags')}>
@@ -53,7 +51,7 @@ export const Sidebar = () => {
           </SidebarItem>
 
           <SidebarItem label='Архив' isActive={mode === 'archive'} onClick={() => handleChangeModeClick('archive')}>
-            <ArchiveIcon isActive={mode === 'archive'} />
+            <ArchiveIcon color={mode==='archive' ? "var(--md-sys-color-on-surface-variant)" : "var(--md-sys-color-outline)"} />
           </SidebarItem>
 
           <SidebarItem label='Корзина' isActive={mode === 'basket'} onClick={() => handleChangeModeClick('basket')}>

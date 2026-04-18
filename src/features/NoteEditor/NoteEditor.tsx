@@ -1,89 +1,71 @@
-import { flushSync } from 'react-dom';
-import { BlocksRegistryProvider, useBlocksRegistry } from '@/features/navigation';
-import { BlockType } from '@/entities/note/model/blockTypes';
-import { useActiveNoteStore } from '@/entities/note/model/store';
-import BaseBlock from './blocks/BaseBlock/BaseBlock';
-import styles from './NoteEditor.module.css'
-import { ContextMenu } from '@/shared/ui/ContextMenu/ContextMenu';
-import TableContents from './ui/TableContents/TableContents';
-import clsx from 'clsx'
-
-import MainTitle from './MainTitle/MainTitle'
-
-import { useAppStore } from '@/app/model/AppStore'
-import { useCallback, useRef } from 'react';
-import { deleteBlock, insertBlock } from '@/entities/note/model/storeOperations';
-
+import { BlocksRegistryProvider, useBlocksRegistry } from "@/features/navigation";
+import { useActiveNoteStore } from "@/entities/note/model/store";
+import { BlockType } from "@/entities/note/model/blockTypes";
+import { insertBlock, deleteBlock, applyDocumentOperations } from "@/entities/note/model/storeOperations";
+import styles from "./NoteEditor.module.css";
+import TableContents from "./ui/TableContents/TableContents";
+import clsx from "clsx";
+import MainTitle from "./MainTitle/MainTitle";
+import { useAppStore } from "@/app/model/AppStore";
+import { useRichTextEditor } from "../contenteditable";
+import { useRef, useCallback } from "react";
+import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
+import { useBlockStructureEditor } from "../contenteditable/useBlockStructureEditor";
+import { useSelectionMenu } from "../contenteditable/useSelectionMenu";
 
 const NoteEditorContent = () => {
-    const blockOrder = useActiveNoteStore((state) => state.activeNote?.blockOrder);
-    const { focusBlock } = useBlocksRegistry();
-    const titleRef = useRef<HTMLInputElement>(null)
+  const blockOrder = useActiveNoteStore((state) => state.activeNote?.blockOrder);
+  const isSidebarOpen = useAppStore((s) => s.isSidebarOpen);
 
-    const isSidebarOpen = useAppStore(s => s.isSidebarOpen);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-    const handleAddBlock = (type: 'text' | 'header' | 'list') => {
-        // const newBlock = initBlock(type);
+  const { registerEditorRoot } = useBlocksRegistry();
 
-        flushSync(() => {
-            // addBlock(newBlock);
-        });
+  const setEditorRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      editorRef.current = node;
+      registerEditorRoot(node);
+    },
+    [registerEditorRoot]
+  );
 
-        // focusBlock(newBlock.id, 'start');
-    };
+  const {applyStyleToSelection} = useRichTextEditor(editorRef, applyDocumentOperations);
 
-    const handleInsertBlock = useCallback(async (type: BlockType, afterId: string) => {
-        const newBlockId = await insertBlock(type, afterId);
-        if (!newBlockId) return;
+  const { menuPosition, isOpen, closeMenu, restoreSelection } = useSelectionMenu(editorRef);
 
-        requestAnimationFrame(() => {
-            focusBlock(newBlockId, 'start');
-        });
-    }, [insertBlock, focusBlock]);
+  useBlockStructureEditor(editorRef);
 
-    const handleDeleteBlock = useCallback(async (id: string) => {
-        const prevBlockId = await deleteBlock(id);
-        if (!prevBlockId) return;
+  return (
+    <div className={styles.container}>
+      <div
+        className={clsx(styles.note_editor, {
+          [styles.sidebar_mode]: isSidebarOpen,
+        })}
+      >
+        <MainTitle ref={titleRef} />
 
-        requestAnimationFrame(() => {
-            focusBlock(prevBlockId, 'end');
-        });
-    }, [deleteBlock, focusBlock]);
-
-    const options = [
-        { title: 'Add text block', action: () => handleAddBlock('text') },
-        { title: 'Add header block', action: () => handleAddBlock('header') },
-        { title: 'Add list block', action: () => handleAddBlock('list') },
-    ]
-
-    return (
-        <div className={styles.container}>
-            <ContextMenu options={options}>
-                <div 
-                className={clsx([styles.note_editor], {
-                    [styles.sidebar_mode]: isSidebarOpen
-                })}
-                >
-                    <MainTitle ref={titleRef} />
-                    {blockOrder?.map((id) => (
-                        <BaseBlock
-                            key={id}
-                            id={id}
-                            onCreateBlock={handleInsertBlock}
-                            onDeleteBlock={handleDeleteBlock}
-                        />
-                    ))}
-                </div>
-            </ContextMenu >
-            <TableContents />
+        <div
+          ref={setEditorRef}
+          contentEditable
+          suppressContentEditableWarning
+          className={styles.blocks_root}
+        >
+          {blockOrder?.map((id) => (
+            <BaseBlock key={id} id={id} />
+          ))}
         </div>
-    )
-}
+      </div>
+
+      <TableContents />
+    </div>
+  );
+};
 
 export const NoteEditor = () => {
-    return (
-        <BlocksRegistryProvider>
-            <NoteEditorContent />
-        </BlocksRegistryProvider>
-    )
-}
+  return (
+    <BlocksRegistryProvider>
+      <NoteEditorContent />
+    </BlocksRegistryProvider>
+  );
+};

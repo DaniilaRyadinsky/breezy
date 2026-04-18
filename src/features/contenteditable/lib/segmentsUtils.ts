@@ -169,3 +169,38 @@ export function applyStyleToRange(
 
   return normalizeSegments(result);
 }
+
+export function sliceSegments(
+  segments: TextSegmentType[],
+  start: number,
+  end: number
+): TextSegmentType[] {
+  const safeSegments = ensureSegments(segments);
+
+  if (start >= end) return [];
+
+  const result: TextSegmentType[] = [];
+  let acc = 0;
+
+  for (const seg of safeSegments) {
+    const segStart = acc;
+    const segEnd = acc + seg.string.length;
+
+    const overlapStart = Math.max(start, segStart);
+    const overlapEnd = Math.min(end, segEnd);
+
+    if (overlapStart < overlapEnd) {
+      result.push({
+        style: seg.style,
+        string: seg.string.slice(
+          overlapStart - segStart,
+          overlapEnd - segStart
+        ),
+      });
+    }
+
+    acc = segEnd;
+  }
+
+  return normalizeSegments(result);
+}

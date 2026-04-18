@@ -3,7 +3,7 @@ import { processSyncQueue } from "../sync/lib/processSyncQueue";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
 import { BlockDataByType, BlockType } from "./blockTypes";
-import { RichTextOperation } from "./operationsType";
+import { BlockOperation, RichTextOperation } from "./operationsType";
 import { useActiveNoteStore } from "./store";
 
 export const insertBlock = async (type: BlockType, afterId: string) => {
@@ -126,31 +126,135 @@ export const updateBlockContent = async <T extends BlockType>(
   // }
 }
 
-export const applyTextBlockOperations = (
-  note_id: string,
-  block_id: string,
-  operations: RichTextOperation[]
+const flushPendingTextOps = (
+  note: any,
+  blockId: string | null,
+  pendingOps: RichTextOperation[]
+) => {
+  if (!blockId || pendingOps.length === 0) {
+    return { note, blockId: null, pendingOps: [] as RichTextOperation[] };
+  }
+
+  const block = note.blocksById[blockId];
+  if (!block || block.type !== "text") {
+    return { note, blockId: null, pendingOps: [] as RichTextOperation[] };
+  }
+
+  const nextData = applyRichTextOperationsToTextData(block.data, pendingOps);
+  const updatedNote = updateBlock(note, blockId, "text", nextData);
+
+  return {
+    note: updatedNote ?? note,
+    blockId: null,
+    pendingOps: [] as RichTextOperation[],
+  };
+};
+
+export const isRichTextOperation = (
+  op: BlockOperation
+): op is RichTextOperation => {
+  return (
+    op.op === "insert_text" ||
+    op.op === "delete_range" ||
+    op.op === "apply_style"
+  );
+};
+
+export const applyDocumentOperations = (
+  noteId: string,
+  operations: BlockOperation[]
 ) => {
   let syncOperations: SyncType[] | null = null;
 
   useActiveNoteStore.setState((state) => {
     const note = state.activeNote;
-    if (!note) return state;
+    if (!note || note.id !== noteId) return state;
 
-    // если у тебя поле называется иначе, просто замени note.id
-    if (note.id !== note_id) return state;
+    let nextNote = note;
 
-    const currentBlock = note.blocksById[block_id];
-    if (!currentBlock) return state;
-    if (currentBlock.type !== "text") return state;
+    let pendingBlockId: string | null = null;
+    let pendingTextOps: RichTextOperation[] = [];
 
-    const nextData = applyRichTextOperationsToTextData(
-      currentBlock.data,
-      operations
-    );
+    const flush = () => {
+      const result = flushPendingTextOps(nextNote, pendingBlockId, pendingTextOps);
+      nextNote = result.note;
+      pendingBlockId = result.blockId;
+      pendingTextOps = result.pendingOps;
+    };
 
-    const updatedNote = updateBlock(note, block_id, "text", nextData);
-    if (!updatedNote) return state;
+    for (const operation of operations) {
+      if (isRichTextOperation(operation)) {
+        const currentBlock = nextNote.blocksById[operation.block_id];
+
+        if (!currentBlock || currentBlock.type !== "text") {
+          flush();
+          continue;
+        }
+
+        if (pendingBlockId === null) {
+          pendingBlockId = operation.block_id;
+          pendingTextOps = [operation];
+          continue;
+        }
+
+        if (pendingBlockId === operation.block_id) {
+          pendingTextOps.push(operation);
+          continue;
+        }
+
+        flush();
+        pendingBlockId = operation.block_id;
+        pendingTextOps = [operation];
+        continue;
+      }
+
+      flush();
+
+      switch (operation.op) {
+        case "delete_block": {
+          const block = nextNote.blocksById[operation.block_id];
+          if (!block) break;
+
+          const nextBlockOrder = nextNote.blockOrder.filter(
+            (id: string) => id !== operation.block_id
+          );
+
+          const nextBlocksById = { ...nextNote.blocksById };
+          delete nextBlocksById[operation.block_id];
+
+          nextNote = {
+            ...nextNote,
+            blockOrder: nextBlockOrder,
+            blocksById: nextBlocksById,
+          };
+
+          break;
+        }
+
+        case "create_block": {
+          const { block, pos } = operation.data;
+
+          const nextBlockOrder = [...nextNote.blockOrder];
+          nextBlockOrder.splice(pos, 0, block.id);
+
+          nextNote = {
+            ...nextNote,
+            blockOrder: nextBlockOrder,
+            blocksById: {
+              ...nextNote.blocksById,
+              [block.id]: block,
+            },
+          };
+
+          break;
+        }
+
+        default:
+          break;
+      }
+    }
+
+    flush();
 
     syncOperations = operations.map((operation) => ({
       opId: crypto.randomUUID(),
@@ -162,12 +266,11 @@ export const applyTextBlockOperations = (
     }));
 
     return {
-      activeNote: updatedNote,
+      activeNote: nextNote,
     };
   });
 
   if (syncOperations) {
     useSyncStore.getState().listQueue(syncOperations);
-    // void processSyncQueue();
   }
 };

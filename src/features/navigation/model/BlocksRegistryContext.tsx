@@ -1,27 +1,65 @@
-import { createContext, useContext, useRef, ReactNode, useCallback, useMemo } from 'react';
-import { setCaretToEdge } from '../lib';
-import { BLOCK_NAVIGATION_EDGE_OFFSET } from '../consts';
+import {
+  createContext,
+  useContext,
+  useRef,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from "react";
+import { setCaretToEdge } from "../lib/setCaretToEdge";
+import { BLOCK_NAVIGATION_EDGE_OFFSET } from "../consts";
+
+interface PendingFocus {
+  id: string;
+  edge: "start" | "end";
+}
 
 interface BlocksRegistry {
-  blocksMap: Map<string, HTMLElement>;
   registerBlock: (id: string, element: HTMLElement) => void;
   unregisterBlock: (id: string) => void;
-  focusBlock: (id: string, edge?: 'start' | 'end') => void;
-  focusBlockAtCoordinate: (id: string, x: number, direction: 'up' | 'down') => void;
+  registerEditorRoot: (element: HTMLElement | null) => void;
+  getBlockElement: (id: string) => HTMLElement | null;
+  focusBlock: (id: string, edge?: "start" | "end") => void;
+  focusBlockAtCoordinate: (
+    id: string,
+    x: number,
+    direction: "up" | "down"
+  ) => void;
 }
 
 const BlocksRegistryContext = createContext<BlocksRegistry | null>(null);
 
-export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) => {
+export const BlocksRegistryProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const blocksMap = useRef(new Map<string, HTMLElement>());
-  const pendingFocusRef = useRef<{ id: string; edge: 'start' | 'end' } | null>(null);
+  const editorRootRef = useRef<HTMLElement | null>(null);
+  const pendingFocusRef = useRef<PendingFocus | null>(null);
+
+  const registerEditorRoot = useCallback((element: HTMLElement | null) => {
+    editorRootRef.current = element;
+
+    const pending = pendingFocusRef.current;
+    if (!element || !pending) return;
+
+    const blockEl = blocksMap.current.get(pending.id);
+    if (!blockEl) return;
+
+    element.focus();
+    setCaretToEdge(blockEl, pending.edge);
+    pendingFocusRef.current = null;
+  }, []);
 
   const registerBlock = useCallback((id: string, element: HTMLElement) => {
     blocksMap.current.set(id, element);
 
     const pending = pendingFocusRef.current;
-    if (pending && pending.id === id) {
-      element.focus();
+    const editorRoot = editorRootRef.current;
+
+    if (pending && pending.id === id && editorRoot) {
+      editorRoot.focus();
       setCaretToEdge(element, pending.edge);
       pendingFocusRef.current = null;
     }
@@ -31,12 +69,17 @@ export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) =>
     blocksMap.current.delete(id);
   }, []);
 
-  const focusBlock = useCallback((id: string, edge: 'start' | 'end' = 'end') => {
-    const element = blocksMap.current.get(id);
+  const getBlockElement = useCallback((id: string) => {
+    return blocksMap.current.get(id) ?? null;
+  }, []);
 
-    if (element) {
-      element.focus();
-      setCaretToEdge(element, edge);
+  const focusBlock = useCallback((id: string, edge: "start" | "end" = "end") => {
+    const blockEl = blocksMap.current.get(id);
+    const editorRoot = editorRootRef.current;
+
+    if (blockEl && editorRoot) {
+      editorRoot.focus();
+      setCaretToEdge(blockEl, edge);
       return;
     }
 
@@ -44,25 +87,28 @@ export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) =>
   }, []);
 
   const focusBlockAtCoordinate = useCallback(
-    (id: string, x: number, direction: 'up' | 'down') => {
-      const element = blocksMap.current.get(id);
-      if (!element) return;
+    (id: string, x: number, direction: "up" | "down") => {
+      const blockEl = blocksMap.current.get(id);
+      const editorRoot = editorRootRef.current;
 
-      element.focus();
+      if (!blockEl || !editorRoot) return;
 
-      const rect = element.getBoundingClientRect();
-      const targetY = direction === 'down' ? 
-      rect.top + BLOCK_NAVIGATION_EDGE_OFFSET : 
-      rect.bottom - BLOCK_NAVIGATION_EDGE_OFFSET;
+      editorRoot.focus();
+
+      const rect = blockEl.getBoundingClientRect();
+      const targetY =
+        direction === "down"
+          ? rect.top + BLOCK_NAVIGATION_EDGE_OFFSET
+          : rect.bottom - BLOCK_NAVIGATION_EDGE_OFFSET;
 
       const applyRange = (range: Range | null) => {
         if (!range) return false;
 
         const startNode = range.startContainer;
-        const isEmpty = !(element.textContent ?? '').trim();
+        const isEmpty = !(blockEl.textContent ?? "").trim();
 
-        if (!element.contains(startNode)) return false;
-        if (isEmpty && startNode === element) return false;
+        if (!blockEl.contains(startNode)) return false;
+        if (isEmpty && startNode === blockEl) return false;
 
         const sel = window.getSelection();
         if (!sel) return false;
@@ -95,20 +141,28 @@ export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) =>
         }
       }
 
-      setCaretToEdge(element, direction === 'down' ? 'start' : 'end');
+      setCaretToEdge(blockEl, direction === "down" ? "start" : "end");
     },
     []
   );
 
   const value = useMemo(
     () => ({
-      blocksMap: blocksMap.current,
       registerBlock,
       unregisterBlock,
+      registerEditorRoot,
+      getBlockElement,
       focusBlock,
       focusBlockAtCoordinate,
     }),
-    [registerBlock, unregisterBlock, focusBlock, focusBlockAtCoordinate]
+    [
+      registerBlock,
+      unregisterBlock,
+      registerEditorRoot,
+      getBlockElement,
+      focusBlock,
+      focusBlockAtCoordinate,
+    ]
   );
 
   return (
@@ -121,7 +175,7 @@ export const BlocksRegistryProvider = ({ children }: { children: ReactNode }) =>
 export const useBlocksRegistry = () => {
   const context = useContext(BlocksRegistryContext);
   if (!context) {
-    throw new Error('useBlocksRegistry must be used within provider');
+    throw new Error("useBlocksRegistry must be used within provider");
   }
   return context;
 };
