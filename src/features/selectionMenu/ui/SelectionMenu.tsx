@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import React, { RefObject, useEffect, useMemo, useState } from "react";
 import { useSelectionMenu } from "../lib/useSelectionMenu";
-import { BlockType, TextStyle } from "@/entities/note/model/blockTypes";
+import { TextStyle } from "@/entities/note/model/blockTypes";
 import type { LucideIcon } from "lucide-react";
 import {
   Bold,
@@ -34,13 +34,13 @@ import {
 } from "lucide-react";
 import { getAvailableBlockTypes } from "@/entities/note/lib/blockConversion";
 import { changeBlockType } from "@/entities/note/model/storeOperations";
+import { BlockChangeType, toBlockChangeTarget } from "@/entities/note/model/blockChangeTypes";
 
 interface ISelectionMenu {
   editorRef: RefObject<HTMLElement | null>;
   applyStyleToSelection: (style: TextStyle) => void;
   getBlockTypeById: (blockId: string) => BlockChangeType | null;
 }
-
 
 
 type BlockOption = {
@@ -112,7 +112,9 @@ export const SelectionMenu = ({
   const availableBlockOptions = useMemo(() => {
     if (!currentBlockType) return [];
 
-    const allowed = new Set(getAvailableBlockTypes(currentBlockType));
+    const baseType = toBlockChangeTarget(currentBlockType).type;
+    const allowed = new Set(getAvailableBlockTypes(baseType));
+
     return BLOCK_OPTIONS.filter((item) => allowed.has(item.type));
   }, [currentBlockType]);
 

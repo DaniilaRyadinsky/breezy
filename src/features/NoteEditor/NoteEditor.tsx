@@ -11,7 +11,7 @@ import { useRef, useCallback } from "react";
 import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
 import { useBlockStructureEditor } from "../contenteditable/useBlockStructureEditor";
 import { SelectionMenu } from "../selectionMenu/ui/SelectionMenu";
-import { BlockType } from "@/entities/note/model/blockTypes";
+import { BlockChangeType, getBlockChangeTypeFromBlock } from "@/entities/note/lib/blockChange";
 
 const NoteEditorContent = () => {
   const activeNote = useActiveNoteStore((state) => state.activeNote);
@@ -40,19 +40,11 @@ const NoteEditorContent = () => {
   useBlockStructureEditor(editorRef);
 
   const getBlockTypeById = useCallback(
-    (blockId: string): BlockType | null => {
-      const block = blocksById[blockId];
-      if (!block) return null;
-
-      return block.type;
+    (blockId: string): BlockChangeType | null => {
+      return getBlockChangeTypeFromBlock(blocksById[blockId]) ?? null;
     },
     [blocksById]
   );
-
-  const handleChangeBlockType = useCallback((type: BlockType) => {
-    console.log("change block type", type);
-    // здесь потом будет логика изменения типа текущего блока
-  }, []);
 
   return (
     <div className={styles.container}>

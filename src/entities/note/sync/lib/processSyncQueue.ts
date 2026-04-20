@@ -5,15 +5,6 @@ import { useActiveNoteStore } from "../../model/store";
 import { SyncType } from "../model/syncTypes";
 import { processBatch } from "./processBatch";
 
-export const getReadyItems = () => {
-  const now = Date.now();
-
-  return useSyncStore
-    .getState()
-    .queue
-    .filter((op) => op.status === "pending" && op.nextAttemptAt <= now);
-};
-
 const getBlockSnapshot = (
   noteId: string,
   blockId: string

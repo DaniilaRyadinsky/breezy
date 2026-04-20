@@ -5,6 +5,7 @@ import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
 import { BlockChangeType } from "./blockChangeTypes";
+import { isRichTextBlock } from "@/features/contenteditable/lib/documentRichText";
 
 export const createPendingSyncOperation = (
   operation: BlockOperation
@@ -47,10 +48,10 @@ export const applyRichTextBatchToBlock = (
   if (!operations.length) return note;
 
   const block = note.blocksById[blockId];
-  if (!block || block.type !== "text") return note;
+  if (!block || !isRichTextBlock(block)) return note;
 
   const nextData = applyRichTextOperationsToTextData(block.data, operations);
-  return updateBlock(note, blockId, "text", nextData) ?? note;
+  return updateBlock(note, blockId, block.type, nextData) ?? note;
 };
 
 export const applyStructuralOperationToNote = (
@@ -117,7 +118,7 @@ export const applyOperationsToNote = (
     if (isRichTextOperation(operation)) {
       const currentBlock = nextNote.blocksById[operation.block_id];
 
-      if (!currentBlock || currentBlock.type !== "text") {
+      if (!currentBlock || !isRichTextBlock(currentBlock)) {
         flushPendingTextOps();
         continue;
       }

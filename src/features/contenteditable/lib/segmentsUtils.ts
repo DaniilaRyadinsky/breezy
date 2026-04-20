@@ -121,17 +121,6 @@ export function deleteRange(
   return normalizeSegments(result);
 }
 
-export function replaceRange(
-  segments: TextSegmentType[],
-  start: number,
-  end: number,
-  string: string,
-  style: TextStyle
-): TextSegmentType[] {
-  const withoutRange = deleteRange(segments, start, end);
-  return insertTextAt(withoutRange, start, string, style);
-}
-
 export function applyStyleToRange(
   segments: TextSegmentType[],
   start: number,

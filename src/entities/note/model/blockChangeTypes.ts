@@ -20,23 +20,6 @@ export type BlockChangeTarget =
   | { type: "header"; level: HeaderLevel }
   | { type: "list"; listType: ListType };
 
-const isHeaderChangeType = (
-  value: BlockChangeType
-): value is `header_${HeaderLevel}` => {
-  return (
-    value === "header_1" ||
-    value === "header_2" ||
-    value === "header_3" ||
-    value === "header_4"
-  );
-};
-
-const isListChangeType = (
-  value: BlockChangeType
-): value is ListType => {
-  return value === "ordered" || value === "unordered" || value === "todo";
-};
-
 export const toBlockChangeTarget = (
   value: BlockChangeType
 ): BlockChangeTarget => {
