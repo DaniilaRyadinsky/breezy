@@ -7,7 +7,7 @@ import {
 } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
 import { initBlock } from "./initBlock";
-import { RichTextOperation } from "../model/operationsType";
+import { ChangeBlockTypeOp, RichTextOperation } from "../model/operationsType";
 import {
   deleteRange,
   applyStyleToRange,
@@ -16,6 +16,7 @@ import {
   normalizeSegments,
   ensureSegments
 } from "@/features/contenteditable";
+import { convertBlockType } from "./blockConversion";
 
 export const insertBlockAfter = (
   note: ActiveNote,
@@ -144,5 +145,28 @@ export const applyRichTextOperationsToTextData = (
   return {
     ...data,
     text_data:{ text: normalizeSegments(nextText) },
+  };
+};
+
+export const applyChangeBlockTypeOperation = (
+  note: ActiveNote,
+  operation: ChangeBlockTypeOp
+): ActiveNote | null => {
+  const block = note.blocksById[operation.block_id];
+  if (!block) return null;
+
+  const nextBlock = convertBlockType(block, operation.data.new_type);
+  if (!nextBlock) return null;
+
+  if (nextBlock === block) {
+    return note;
+  }
+
+  return {
+    ...note,
+    blocksById: {
+      ...note.blocksById,
+      [block.id]: nextBlock,
+    },
   };
 };

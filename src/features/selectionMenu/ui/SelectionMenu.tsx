@@ -33,24 +33,31 @@ import {
   FileText,
 } from "lucide-react";
 import { getAvailableBlockTypes } from "@/entities/note/lib/blockConversion";
+import { changeBlockType } from "@/entities/note/model/storeOperations";
 
 interface ISelectionMenu {
   editorRef: RefObject<HTMLElement | null>;
   applyStyleToSelection: (style: TextStyle) => void;
-  getBlockTypeById: (blockId: string) => BlockType | null;
-  onChangeBlockType: (type: BlockType) => void;
+  getBlockTypeById: (blockId: string) => BlockChangeType | null;
 }
 
+
+
 type BlockOption = {
-  type: BlockType;
+  type: BlockChangeType;
   label: string;
   icon: LucideIcon;
 };
 
 const BLOCK_OPTIONS: BlockOption[] = [
   { type: "text", label: "Текст", icon: Type },
-  { type: "header", label: "Заголовок", icon: Heading1 },
-  { type: "list", label: "Список", icon: ListIcon },
+  { type: "header_1", label: "Заголовок 1", icon: Heading1 },
+  { type: "header_2", label: "Заголовок 2", icon: Heading1 },
+  { type: "header_3", label: "Заголовок 3", icon: Heading1 },
+  { type: "header_4", label: "Заголовок 4", icon: Heading1 },
+  { type: "unordered", label: "Маркированный список", icon: ListIcon },
+  { type: "ordered", label: "Нумерованный список", icon: ListIcon },
+  { type: "todo", label: "Todo список", icon: ListIcon },
   { type: "quote", label: "Цитата", icon: Quote },
   { type: "code", label: "Код", icon: Code2 },
   { type: "img", label: "Изображение", icon: ImageIcon },
@@ -63,22 +70,23 @@ const STYLE_ACTIONS: {
   label: string;
   icon: LucideIcon;
 }[] = [
-  { style: "bold", label: "Bold", icon: Bold },
-  { style: "italic", label: "Italic", icon: Italic },
-  { style: "underline", label: "Underline", icon: Underline },
-];
+    { style: "bold", label: "Bold", icon: Bold },
+    { style: "italic", label: "Italic", icon: Italic },
+    { style: "underline", label: "Underline", icon: Underline },
+  ];
 
 export const SelectionMenu = ({
   editorRef,
   applyStyleToSelection,
   getBlockTypeById,
-  onChangeBlockType,
 }: ISelectionMenu) => {
+
   const {
     menuPosition,
     isOpen,
     closeMenu,
     restoreSelection,
+    currentBlockId,
     currentBlockType,
   } = useSelectionMenu(editorRef, {
     getBlockTypeById,
@@ -137,9 +145,11 @@ export const SelectionMenu = ({
     handleCloseToolbar();
   };
 
-  const handleChangeBlock = (type: BlockType) => {
+  const handleChangeBlock = (type: BlockChangeType) => {
     restoreSelection();
-    onChangeBlockType(type);
+    if (currentBlockId) {
+      changeBlockType(currentBlockId, type);
+    }
     handleCloseBlockMenu();
   };
 

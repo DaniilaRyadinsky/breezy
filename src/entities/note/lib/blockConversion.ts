@@ -1,10 +1,7 @@
-// blockConversion.ts
-
+import { BlockChangeType, toBlockChangeTarget } from "../model/blockChangeTypes";
 import { BlockType, TextSegmentType, Block } from "../model/blockTypes";
 
-
-// 1) Здесь задаем, во что КАЖДЫЙ тип можно превращать
-export const ALLOWED_BLOCK_CONVERSIONS = {
+export const ALLOWED_BLOCK_CONVERSIONS: Record<BlockType, readonly BlockType[]> = {
   text: ["text", "header", "list", "quote", "code", "link"],
   header: ["header", "text", "list", "quote", "code", "link"],
   list: ["list", "text", "header", "quote", "code", "link"],
@@ -13,7 +10,7 @@ export const ALLOWED_BLOCK_CONVERSIONS = {
   link: ["link", "text", "quote"],
   img: ["img"],
   file: ["file"],
-} as const satisfies Record<BlockType, readonly BlockType[]>;
+};
 
 function cloneTextSegments(segments: TextSegmentType[]): TextSegmentType[] {
   return segments.map((segment) => ({ ...segment }));
@@ -30,14 +27,24 @@ function textSegmentsToString(segments: TextSegmentType[]): string {
 
 export function canChangeBlockType(
   from: BlockType,
-  to: BlockType,
+  to: BlockChangeType,
 ): boolean {
-  const allowed = ALLOWED_BLOCK_CONVERSIONS[from] as readonly BlockType[];
-  return allowed.includes(to);
+  const target = toBlockChangeTarget(to);
+  return ALLOWED_BLOCK_CONVERSIONS[from].includes(target.type);
 }
 
-export function getAvailableBlockTypes(from: BlockType): BlockType[] {
-  return [...ALLOWED_BLOCK_CONVERSIONS[from]];
+export function getAvailableBlockTypes(from: BlockType): BlockChangeType[] {
+  return ALLOWED_BLOCK_CONVERSIONS[from].flatMap((type) => {
+    if (type === "header") {
+      return ["header_1", "header_2", "header_3", "header_4"] as const;
+    }
+
+    if (type === "list") {
+      return ["unordered", "ordered", "todo"] as const;
+    }
+
+    return [type];
+  });
 }
 
 export function getPlainTextFromBlock(block: Block): string {
@@ -82,20 +89,34 @@ export function getTextSegmentsFromBlock(block: Block): TextSegmentType[] {
 
 export function convertBlockType(
   block: Block,
-  newType: BlockType,
+  newType: BlockChangeType,
 ): Block | null {
   if (!canChangeBlockType(block.type, newType)) {
     return null;
   }
 
-  if (block.type === newType) {
+  const target = toBlockChangeTarget(newType);
+
+  if (
+    block.type === target.type &&
+    !(
+      target.type === "header" &&
+      block.type === "header" &&
+      block.data.level !== target.level
+    ) &&
+    !(
+      target.type === "list" &&
+      block.type === "list" &&
+      block.data.type !== target.listType
+    )
+  ) {
     return block;
   }
 
   const plainText = getPlainTextFromBlock(block);
   const textData = getTextSegmentsFromBlock(block);
 
-  switch (newType) {
+  switch (target.type) {
     case "text":
       return {
         id: block.id,
@@ -113,7 +134,7 @@ export function convertBlockType(
         type: "header",
         data: {
           text_data: { text: textData },
-          level: block.type === "header" ? block.data.level : 1,
+          level: target.level,
         },
       };
 
@@ -125,8 +146,13 @@ export function convertBlockType(
         data: {
           text_data: { text: textData },
           level: block.type === "list" ? block.data.level : 1,
-          type: block.type === "list" ? block.data.type : "unordered",
-          value: block.type === "list" ? block.data.value : 1,
+          type: target.listType,
+          value:
+            target.listType === "ordered"
+              ? block.type === "list" && block.data.type === "ordered"
+                ? block.data.value
+                : 1
+              : 0,
         },
       };
 
@@ -164,8 +190,6 @@ export function convertBlockType(
 
     case "img":
     case "file":
-      // в этой конфигурации сюда никогда не дойдем,
-      // кроме случая если потом захочешь расширить ALLOWED_BLOCK_CONVERSIONS
       return null;
   }
 }

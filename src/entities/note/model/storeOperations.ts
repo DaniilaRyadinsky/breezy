@@ -1,9 +1,10 @@
-import { BlockOperation, RichTextOperation } from "@/entities/note/model/operationsType";
-import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById } from "../lib";
+import { BlockOperation, ChangeBlockTypeOp, RichTextOperation } from "@/entities/note/model/operationsType";
+import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation } from "../lib";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
+import { BlockChangeType } from "./blockChangeTypes";
 
 export const createPendingSyncOperation = (
   operation: BlockOperation
@@ -84,6 +85,10 @@ export const applyStructuralOperationToNote = (
           [block.id]: block,
         },
       };
+    }
+
+    case "change_block_type": {
+      return applyChangeBlockTypeOperation(note, operation) ?? note;
     }
 
     default:
@@ -243,5 +248,45 @@ export const applyDocumentOperations = (
 
   if (syncOperations.length) {
     useSyncStore.getState().listQueue(syncOperations);
+  }
+};
+
+
+export const changeBlockType = (
+  blockId: string,
+  newType: BlockChangeType
+) => {
+  let syncOperation: SyncType | null = null;
+  let didChange = false;
+
+  useActiveNoteStore.setState((state) => {
+    const note = state.activeNote;
+    if (!note) return state;
+
+    const block = note.blocksById[blockId];
+    if (!block) return state;
+
+    const operation: ChangeBlockTypeOp = {
+      op: "change_block_type",
+      note_id: note.id,
+      block_id: blockId,
+      data: {
+        new_type: newType,
+      },
+    };
+
+    const nextNote = applyChangeBlockTypeOperation(note, operation);
+    if (!nextNote || nextNote === note) return state;
+
+    didChange = true;
+    syncOperation = createPendingSyncOperation(operation);
+
+    return {
+      activeNote: nextNote,
+    };
+  });
+
+  if (didChange && syncOperation) {
+    useSyncStore.getState().enqueue(syncOperation);
   }
 };

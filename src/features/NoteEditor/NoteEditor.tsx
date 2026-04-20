@@ -79,7 +79,6 @@ const NoteEditorContent = () => {
           editorRef={editorRef}
           applyStyleToSelection={applyStyleToSelection}
           getBlockTypeById={getBlockTypeById}
-          onChangeBlockType={handleChangeBlockType}
         />
       </div>
 

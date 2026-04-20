@@ -1,3 +1,4 @@
+import { BlockChangeType } from "./blockChangeTypes";
 import { TextStyle, ListType, HeaderLevel, BlockType, Block } from "./blockTypes";
 
 export type BaseOperation<TOp extends string, TData> = {
@@ -15,7 +16,7 @@ export type DeleteBlockOp = BaseOperation<
   "delete_block", {}>;
 
 export type ChangeBlockTypeOp = BaseOperation<
-  "change_block_type", { new_type: BlockType; }>;
+  "change_block_type", { new_type: BlockChangeType; }>;
 
 /* -------------------- Общие текстовые операции -------------------- */
 

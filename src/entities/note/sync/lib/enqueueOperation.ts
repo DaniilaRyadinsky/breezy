@@ -15,12 +15,14 @@ export const executeSyncOperation = async (op: SyncType) => {
         op.payload.block_id,
         op.payload.note_id
       );
-      case "change_block_type":
-        return changeBlockTypeApi(
-          op.payload.block_id,
-          op.payload.note_id,
-          op.payload.data.new_type
-        );
+
+    case "change_block_type":
+      return changeBlockTypeApi(
+        op.payload.block_id,
+        op.payload.note_id,
+        op.payload.data.new_type
+      );
+      
     default:
       return await operationsApi(op.payload);
   }
