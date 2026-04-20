@@ -1,4 +1,4 @@
-import { useAppStore } from '@/app/model/AppStore'
+import { useAppStore } from '@/shared/model/AppStore'
 import { useActiveNoteStore } from '@/entities/note/model/store'
 import { Button } from '@/shared/ui/Button'
 import Burger from './burger'

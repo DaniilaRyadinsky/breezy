@@ -14,8 +14,8 @@ import {
   buildApplyStyleOperations,
   buildDeleteSelectionOperations,
   getSegmentsLength,
-  isRichTextBlock,
 } from "./lib/documentRichText";
+import { isRichTextBlock } from "@/entities/note/lib/isRichTextBlock";
 
 type ApplyDocumentOperations = (
   noteId: string,

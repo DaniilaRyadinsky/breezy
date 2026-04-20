@@ -5,7 +5,7 @@ import styles from "./NoteEditor.module.css";
 import TableContents from "./ui/TableContents/TableContents";
 import clsx from "clsx";
 import MainTitle from "./MainTitle/MainTitle";
-import { useAppStore } from "@/app/model/AppStore";
+import { useAppStore } from "@/shared/model/AppStore";
 import { useRichTextEditor } from "../contenteditable";
 import { useRef, useCallback } from "react";
 import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";

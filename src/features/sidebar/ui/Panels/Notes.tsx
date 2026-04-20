@@ -1,7 +1,6 @@
-import { getNoteList } from '../../../../entities/note/api/noteApi'
+import { getNoteList } from '@/entities/note/api/noteApi'
 import { Search } from '../../../Search'
 import List from '../NotesList/List'
-// import { notesList } from '../../test/test'
 import styles from './panels.module.css'
 import { useQuery } from '@tanstack/react-query'
 

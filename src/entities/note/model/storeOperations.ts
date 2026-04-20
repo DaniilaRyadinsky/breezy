@@ -5,7 +5,7 @@ import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
 import { BlockChangeType } from "./blockChangeTypes";
-import { isRichTextBlock } from "@/features/contenteditable/lib/documentRichText";
+import { isRichTextBlock } from "../lib/isRichTextBlock";
 
 export const createPendingSyncOperation = (
   operation: BlockOperation

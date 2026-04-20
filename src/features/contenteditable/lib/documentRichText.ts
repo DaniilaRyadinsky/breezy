@@ -1,8 +1,5 @@
 import {
   Block,
-  HeaderBlockType,
-  ListBlockType,
-  TextBlockType,
   TextSegmentType,
   TextStyle,
 } from "@/entities/note/model/blockTypes";
@@ -12,22 +9,13 @@ import {
   normalizeEditorSelection,
 } from "./editorSelection";
 import { sliceSegments } from "./segmentsUtils";
-
-type RichTextBlock = TextBlockType | HeaderBlockType | ListBlockType;
+import { isRichTextBlock } from "@/entities/note/lib/isRichTextBlock";
 
 type EditorNote = {
   id: string;
   blockOrder: string[];
   blocksById: Record<string, Block>;
 };
-
-export function isRichTextBlock(block: Block): block is RichTextBlock {
-  return (
-    block.type === "text" ||
-    block.type === "header" ||
-    block.type === "list"
-  );
-}
 
 export function getSegmentsLength(segments: TextSegmentType[]): number {
   return segments.reduce((sum, seg) => sum + seg.string.length, 0);

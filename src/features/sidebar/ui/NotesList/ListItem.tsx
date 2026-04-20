@@ -1,23 +1,15 @@
-import { useNoteMutations } from '../../../../entities/note/lib/useNoteMuttion';
-import { NoteInfo } from '../../../../entities/note/model/noteTypes';
-import { useActiveNoteStore } from '../../../../entities/note/model/store';
-import { TagChip } from '../../../../entities/tag/ui/TagChip';
-import PointsMenu from '../../../../shared/ui/PointsMenu/PointsMenu';
+import { NoteInfo } from '@/entities/note/model/noteTypes';
+import { TagChip } from '@/entities/tag/ui/TagChip';
+import PointsMenu from '@/shared/ui/PointsMenu/PointsMenu';
 import styles from './List.module.css'
+import { useNavigate } from 'react-router-dom';
 
 export interface IListItem {
   item: NoteInfo,
+  isSelected?: boolean,
 }
 
-export const ListItem = ({ item }: IListItem) => {
-  const {getNote} = useNoteMutations();
-  const activeNote = useActiveNoteStore((store) => store.activeNote);
-  const isSelected = activeNote?.id === item.id;
-
-  const onClick = async () => {
-    getNote(item.id)
-    console.log("выбрана заметка", item.id)
-  }
+export const ListItem = ({ item, isSelected }: IListItem) => {
 
   const styleSelected = {
     backgroundColor: isSelected ? 'var(--md-sys-color-surface-container-highest)' : '',
@@ -25,23 +17,27 @@ export const ListItem = ({ item }: IListItem) => {
   };
 
   const menuOps = [
-    {title: "Удалить заметку",
+    {
+      title: "Удалить заметку",
       action: () => console.log('1')
     },
-    {title: "Добавить тег",
+    {
+      title: "Добавить тег",
       action: () => console.log('2')
     },
-    {title: "Поделиться",
+    {
+      title: "Поделиться",
       action: () => console.log('3')
     }
   ]
+  const navigate = useNavigate();
 
   return (
     <li className={styles.item} >
-      <div className={styles.item_container} onClick={() => onClick()} style={styleSelected}>
+      <div className={styles.item_container} onClick={() => navigate(`/notes/${item.id}`)} style={styleSelected}>
         <div className={styles.item_title_container}>
           <h3 className={styles.item_title}>{item.title}</h3>
-          <PointsMenu options={menuOps}/>
+          <PointsMenu options={menuOps} />
 
         </div>
         <div className={styles.item_description_container}>
