@@ -20,25 +20,23 @@ import { convertBlockType } from "./blockConversion";
 
 export const insertBlockAfter = (
   note: ActiveNote,
-  type: BlockType,
+  block: Block,
   afterId: string
 ): { nextNote: ActiveNote; newBlock: Block; pos: number } | null => {
   const index = note.blockOrder.indexOf(afterId);
   if (index === -1) return null;
 
-  const newBlock = initBlock(type);
   const pos = index + 1;
-
   const nextOrder = [...note.blockOrder];
-  nextOrder.splice(pos, 0, newBlock.id);
+  nextOrder.splice(pos, 0, block.id);
 
   const nextBlocksById = {
     ...note.blocksById,
-    [newBlock.id]: newBlock,
+    [block.id]: block,
   };
 
   return {
-    newBlock,
+    newBlock: block,
     pos,
     nextNote: {
       ...note,

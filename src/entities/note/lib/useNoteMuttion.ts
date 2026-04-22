@@ -6,7 +6,6 @@ export const useNoteMutations = () => {
   const qc = useQueryClient()
   const selectNote = useActiveNoteStore(s => s.selectNote);
 
-
   const getNote = async (id: string) => {
     const data = await qc.fetchQuery({
       queryKey: ['note', id],
@@ -27,6 +26,7 @@ export const useNoteMutations = () => {
       patchTitleApi(title, id),
     onSuccess: () => {
       console.log("изменен заголовок")
+      qc.invalidateQueries({ queryKey: ["notesList"] });
     }
   })
 

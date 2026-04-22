@@ -5,6 +5,7 @@ import { memo, useCallback } from 'react';
 import { useActiveNoteStore } from '@/entities/note/model/store';
 import { useBlocksRegistry } from '@/features/navigation';
 import styles from './BaseBlock.module.css'
+import { CodeBlock } from '../CodeBlock/CodeBlock';
 
 type BaseBlockProps = {
     id: string;
@@ -37,6 +38,7 @@ export const BaseBlock = memo((props: BaseBlockProps) => {
             {block.type === "text" && <TextBlock {...block} />}
             {block.type === "list" && <ListBlock {...block} />}
             {block.type === "header" && <HeaderBlock {...block} />}
+            {block.type === "code" && <CodeBlock {...block} />}
         </div>
     );
 });

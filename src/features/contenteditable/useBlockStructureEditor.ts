@@ -2,10 +2,18 @@ import { useActiveNoteStore } from "@/entities/note/model/store";
 import { RefObject, useEffect } from "react";
 import { useBlocksRegistry } from "@/features/navigation";
 import { getSingleBlockSelection } from "./lib/editorSelection";
-import { deleteBlock, insertBlock } from "@/entities/note/model/storeOperations";
+import {
+  applyDocumentOperations,
+  deleteBlock,
+  insertBlock,
+} from "@/entities/note/model/storeOperations";
+import { isRichTextBlock } from "@/entities/note/lib/isRichTextBlock";
+import { getSegmentsLength } from "./lib/documentRichText";
+import { createNextBlockFromBlock } from "@/entities/note/lib";
+import { buildSplitBlockOperations } from "./lib/splitBuilder";
 
 export const useBlockStructureEditor = (
-  editorRef: RefObject<HTMLElement | null>,
+  editorRef: RefObject<HTMLElement | null>
 ) => {
   const { focusBlock } = useBlocksRegistry();
 
@@ -32,24 +40,53 @@ export const useBlockStructureEditor = (
           return;
         }
 
-        const textLength = selection.blockEl.textContent?.length ?? 0;
+        if (currentBlock.type === "code") {
+          return;
+        }
 
-        if (selection.start === textLength) {
-          const newBlockId = await insertBlock(
-            currentBlock.type,
-            currentBlock.id
-          );
+        if (!isRichTextBlock(currentBlock)) {
+          const nextBlock = createNextBlockFromBlock(currentBlock);
+          if (!nextBlock) return;
 
+          const newBlockId = insertBlock(nextBlock, currentBlock.id);
           if (newBlockId) {
             requestAnimationFrame(() => {
               focusBlock(newBlockId, "start");
             });
           }
-
           return;
         }
 
-        // TODO: split block
+        const textLength = getSegmentsLength(currentBlock.data.text_data.text);
+
+        if (selection.start === textLength) {
+          const nextBlock = createNextBlockFromBlock(currentBlock);
+          if (!nextBlock) return;
+
+          const newBlockId = insertBlock(nextBlock, currentBlock.id);
+          if (newBlockId) {
+            requestAnimationFrame(() => {
+              focusBlock(newBlockId, "start");
+            });
+          }
+          return;
+        }
+
+        const splitResult = buildSplitBlockOperations({
+          noteId: activeNote.id,
+          note: activeNote,
+          blockId: currentBlock.id,
+          offset: selection.start,
+        });
+
+        if (!splitResult) return;
+
+        applyDocumentOperations(activeNote.id, splitResult.operations);
+
+        requestAnimationFrame(() => {
+          focusBlock(splitResult.focusBlockId, "start");
+        });
+
         return;
       }
 
@@ -58,13 +95,16 @@ export const useBlockStructureEditor = (
           return;
         }
 
-        const textLength = selection.blockEl.textContent?.length ?? 0;
+        if (!isRichTextBlock(currentBlock)) {
+          return;
+        }
+
+        const textLength = getSegmentsLength(currentBlock.data.text_data.text);
 
         if (textLength === 0) {
           e.preventDefault();
 
           const prevBlockId = await deleteBlock(currentBlock.id);
-
           if (prevBlockId) {
             requestAnimationFrame(() => {
               focusBlock(prevBlockId, "end");
@@ -75,7 +115,6 @@ export const useBlockStructureEditor = (
     };
 
     root.addEventListener("keydown", handleKeyDown);
-
     return () => {
       root.removeEventListener("keydown", handleKeyDown);
     };

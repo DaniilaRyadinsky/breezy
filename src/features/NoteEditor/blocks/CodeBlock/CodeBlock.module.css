@@ -1,0 +1,97 @@
+.root {
+  --line-height: 1.5;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  overflow-x: auto;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
+  font-size: 14px;
+  background: #1e1e1e;
+  border-radius: 12px;
+}
+
+.gutter {
+  padding: 12px 10px 12px 12px;
+  text-align: right;
+  user-select: none;
+  color: #6b7280;
+  border-right: 1px solid #2f2f2f;
+}
+
+.lineNumber {
+  line-height: var(--line-height);
+  min-height: calc(14px * var(--line-height));
+}
+
+.pre {
+  margin: 0;
+  padding: 12px 12px 12px 10px;
+  line-height: var(--line-height);
+  white-space: pre;
+  overflow: visible;
+  background: transparent;
+  color: #d4d4d4;
+}
+
+.pre code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Подсветка токенов */
+.root :global(.token.comment),
+.root :global(.token.prolog),
+.root :global(.token.doctype),
+.root :global(.token.cdata) {
+  color: #6a9955;
+}
+
+.root :global(.token.punctuation) {
+  color: #d4d4d4;
+}
+
+.root :global(.token.property),
+.root :global(.token.tag),
+.root :global(.token.constant),
+.root :global(.token.symbol),
+.root :global(.token.deleted) {
+  color: #569cd6;
+}
+
+.root :global(.token.boolean),
+.root :global(.token.number) {
+  color: #b5cea8;
+}
+
+.root :global(.token.selector),
+.root :global(.token.attr-name),
+.root :global(.token.string),
+.root :global(.token.char),
+.root :global(.token.builtin),
+.root :global(.token.inserted) {
+  color: #ce9178;
+}
+
+.root :global(.token.operator),
+.root :global(.token.entity),
+.root :global(.token.url) {
+  color: #d4d4d4;
+}
+
+.root :global(.token.atrule),
+.root :global(.token.attr-value),
+.root :global(.token.keyword) {
+  color: #c586c0;
+}
+
+.root :global(.token.function),
+.root :global(.token.class-name) {
+  color: #dcdcaa;
+}
+
+.root :global(.token.regex),
+.root :global(.token.important),
+.root :global(.token.variable) {
+  color: #d16969;
+}

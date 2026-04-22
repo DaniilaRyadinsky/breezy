@@ -2,7 +2,7 @@ import { BlockOperation, ChangeBlockTypeOp, RichTextOperation } from "@/entities
 import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation } from "../lib";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
-import { BlockType, BlockDataByType } from "./blockTypes";
+import { BlockType, BlockDataByType, Block } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
 import { BlockChangeType } from "./blockChangeTypes";
 import { isRichTextBlock } from "../lib/isRichTextBlock";
@@ -144,7 +144,7 @@ export const applyOperationsToNote = (
 };
 
 
-export const insertBlock = (type: BlockType, afterId: string) => {
+export const insertBlock = (block: Block, afterId: string) => {
   let createdBlockId: string | null = null;
   let syncOperation: SyncType | null = null;
 
@@ -152,11 +152,10 @@ export const insertBlock = (type: BlockType, afterId: string) => {
     const note = state.activeNote;
     if (!note) return state;
 
-    const result = insertBlockAfter(note, type, afterId);
+    const result = insertBlockAfter(note, block, afterId);
     if (!result) return state;
 
     createdBlockId = result.newBlock.id;
-
     syncOperation = createPendingSyncOperation({
       op: "create_block",
       data: {

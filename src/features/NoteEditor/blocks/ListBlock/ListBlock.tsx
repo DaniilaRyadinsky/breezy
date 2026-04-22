@@ -29,11 +29,17 @@ const ListBlock = ({ id, data }: ListBlockType) => {
 
   return (
     <div className={styles.list_container} style={tabStyle}>
-      <div className={styles.list_sign}>
+      <div className={styles.list_sign} contentEditable={false} data-block-sign>
         {GetSign()}
       </div>
-      <p id={id} className={styles.text} >
-        {text_data.text.map(item => <TextSegmentType {...item} />)}
+      <p className={styles.text} data-block-content>
+        {text_data.text.every((item) => item.string.length === 0) ? (
+          <br />
+        ) : (
+          text_data.text.map((item, index) => (
+            <TextSegmentType key={index} {...item} />
+          ))
+        )}
       </p>
     </div>
   );

@@ -1,3 +1,5 @@
+import { getBlockContentElement } from "./segmentsUtils";
+
 export type CaretSelection = {
   start: number;
   end: number;
@@ -132,11 +134,14 @@ export function getEditorSelection(
 
   if (!startBlockId || !endBlockId) return null;
 
+  const startContent = getBlockContentElement(startBlock);
+  const endContent = getBlockContentElement(endBlock);
+
   return {
     start: {
       blockId: startBlockId,
       offset: getOffsetWithinBlock(
-        startBlock,
+        startContent,
         range.startContainer,
         range.startOffset
       ),
@@ -144,7 +149,7 @@ export function getEditorSelection(
     end: {
       blockId: endBlockId,
       offset: getOffsetWithinBlock(
-        endBlock,
+        endContent,
         range.endContainer,
         range.endOffset
       ),
@@ -213,8 +218,11 @@ export function setEditorSelection(
 
   if (!startBlock || !endBlock) return;
 
-  const startPos = findTextPosition(startBlock, selection.start.offset);
-  const endPos = findTextPosition(endBlock, selection.end.offset);
+  const startContent = getBlockContentElement(startBlock);
+  const endContent = getBlockContentElement(endBlock);
+
+  const startPos = findTextPosition(startContent, selection.start.offset);
+  const endPos = findTextPosition(endContent, selection.end.offset);
 
   const range = document.createRange();
   range.setStart(startPos.node, startPos.offset);

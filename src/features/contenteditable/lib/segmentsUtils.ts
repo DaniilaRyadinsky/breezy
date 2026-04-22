@@ -193,3 +193,7 @@ export function sliceSegments(
 
   return normalizeSegments(result);
 }
+
+export function getBlockContentElement(blockEl: HTMLElement): HTMLElement {
+  return blockEl.querySelector<HTMLElement>("[data-block-content]") ?? blockEl;
+}
