@@ -1,4 +1,5 @@
 import { TextStyle, TextSegmentType } from "@/entities/note/model/blockTypes";
+import { getSegmentsLength } from "./documentRichText";
 
 const EMPTY_SEGMENT: TextSegmentType = {
   style: "default",
@@ -197,3 +198,18 @@ export function sliceSegments(
 export function getBlockContentElement(blockEl: HTMLElement): HTMLElement {
   return blockEl.querySelector<HTMLElement>("[data-block-content]") ?? blockEl;
 }
+
+export const splitSegments = (
+  segments: TextSegmentType[],
+  offset: number
+): {
+  left: TextSegmentType[];
+  right: TextSegmentType[];
+} => {
+  const length = getSegmentsLength(segments);
+
+  return {
+    left: normalizeSegments(sliceSegments(segments, 0, offset)),
+    right: normalizeSegments(sliceSegments(segments, offset, length)),
+  };
+};

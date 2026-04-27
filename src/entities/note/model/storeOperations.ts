@@ -1,11 +1,12 @@
 import { BlockOperation, ChangeBlockTypeOp, RichTextOperation } from "@/entities/note/model/operationsType";
-import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation } from "../lib";
+import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation, applyDeleteRangeToPlainTextBlock, applyInsertTextToPlainTextBlock } from "../lib";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType, Block } from "./blockTypes";
 import { useActiveNoteStore } from "./store";
 import { BlockChangeType } from "./blockChangeTypes";
-import { isRichTextBlock } from "../lib/isRichTextBlock";
+import { ActiveNote } from "./noteTypes";
+import { isRichTextBlock, PlainTextOperation, isPlainTextBlock, TextEditingOperation, isPlainTextOperation, isTextEditingOperation } from "../lib/blockGuards";
 
 export const createPendingSyncOperation = (
   operation: BlockOperation
@@ -22,15 +23,6 @@ export const createPendingSyncOperation = (
   };
 };
 
-export const isRichTextOperation = (
-  op: BlockOperation
-): op is RichTextOperation => {
-  return (
-    op.op === "insert_text" ||
-    op.op === "delete_range" ||
-    op.op === "apply_style"
-  );
-};
 
 
 export const createPendingSyncOperations = (
@@ -39,9 +31,33 @@ export const createPendingSyncOperations = (
   return operations.map(createPendingSyncOperation);
 };
 
+type NoteUpdaterResult<T = void> = {
+  nextNote: ActiveNote;
+  sideEffect?: T;
+};
+
+const updateActiveNote = <T>(
+  updater: (note: ActiveNote) => NoteUpdaterResult<T> | null
+): T | null => {
+  let sideEffect: T | null = null;
+
+  useActiveNoteStore.setState((state) => {
+    const note = state.activeNote;
+    if (!note) return state;
+
+    const result = updater(note);
+    if (!result) return state;
+
+    sideEffect = result.sideEffect ?? null;
+    return { activeNote: result.nextNote };
+  });
+
+  return sideEffect;
+};
+
 
 export const applyRichTextBatchToBlock = (
-  note: any,
+  note: ActiveNote,
   blockId: string,
   operations: RichTextOperation[]
 ) => {
@@ -55,74 +71,116 @@ export const applyRichTextBatchToBlock = (
 };
 
 export const applyStructuralOperationToNote = (
-  note: any,
+  note: ActiveNote,
   operation: BlockOperation
 ) => {
   switch (operation.op) {
-    case "delete_block": {
-      const block = note.blocksById[operation.block_id];
-      if (!block) return note;
+    case "delete_block":
+      return removeBlockById(note, operation.block_id)?.nextNote ?? note;
 
-      const nextBlocksById = { ...note.blocksById };
-      delete nextBlocksById[operation.block_id];
-
-      return {
+    case "create_block":
+      return insertBlockAfter(
+        note,
+        operation.data.block,
+        note.blockOrder[operation.data.pos - 1] ?? ""
+      )?.nextNote ?? {
         ...note,
-        blockOrder: note.blockOrder.filter((id: string) => id !== operation.block_id),
-        blocksById: nextBlocksById,
-      };
-    }
-
-    case "create_block": {
-      const { block, pos } = operation.data;
-      const nextBlockOrder = [...note.blockOrder];
-      nextBlockOrder.splice(pos, 0, block.id);
-
-      return {
-        ...note,
-        blockOrder: nextBlockOrder,
+        blockOrder: [
+          ...note.blockOrder.slice(0, operation.data.pos),
+          operation.data.block.id,
+          ...note.blockOrder.slice(operation.data.pos),
+        ],
         blocksById: {
           ...note.blocksById,
-          [block.id]: block,
+          [operation.data.block.id]: operation.data.block,
         },
       };
-    }
 
-    case "change_block_type": {
+    case "change_block_type":
       return applyChangeBlockTypeOperation(note, operation) ?? note;
-    }
 
     default:
       return note;
   }
 };
 
+export const applyPlainTextBatchToBlock = (
+  note: ActiveNote,
+  blockId: string,
+  operations: PlainTextOperation[]
+) => {
+  if (!operations.length) return note;
+
+  const block = note.blocksById[blockId];
+  if (!block || !isPlainTextBlock(block)) return note;
+
+  let nextBlock = block;
+
+  for (const operation of operations) {
+    switch (operation.op) {
+      case "insert_text":
+        nextBlock = applyInsertTextToPlainTextBlock(
+          nextBlock,
+          operation.data.pos,
+          operation.data.new_text
+        );
+        break;
+
+      case "delete_range":
+        nextBlock = applyDeleteRangeToPlainTextBlock(
+          nextBlock,
+          operation.data.start,
+          operation.data.end
+        );
+        break;
+    }
+  }
+
+  return updateBlock(note, blockId, nextBlock.type, nextBlock.data) ?? note;
+};
+
+const applyTextBatchToBlock = (
+  note: ActiveNote,
+  blockId: string,
+  operations: TextEditingOperation[]
+) => {
+  const block = note.blocksById[blockId];
+  if (!block) return note;
+
+  if (isRichTextBlock(block)) {
+    return applyRichTextBatchToBlock(note, blockId, operations as RichTextOperation[]);
+  }
+
+  if (isPlainTextBlock(block)) {
+    return applyPlainTextBatchToBlock(
+      note,
+      blockId,
+      operations.filter(isPlainTextOperation)
+    );
+  }
+
+  return note;
+};
+
 export const applyOperationsToNote = (
-  note: any,
+  note: ActiveNote,
   operations: BlockOperation[]
 ) => {
   let nextNote = note;
 
   let pendingBlockId: string | null = null;
-  let pendingTextOps: RichTextOperation[] = [];
+  let pendingTextOps: TextEditingOperation[] = [];
 
   const flushPendingTextOps = () => {
-    if (!pendingBlockId || !pendingTextOps.length) return;
+  if (!pendingBlockId || !pendingTextOps.length) return;
 
-    nextNote = applyRichTextBatchToBlock(nextNote, pendingBlockId, pendingTextOps);
-    pendingBlockId = null;
-    pendingTextOps = [];
-  };
+  nextNote = applyTextBatchToBlock(nextNote, pendingBlockId, pendingTextOps);
+  pendingBlockId = null;
+  pendingTextOps = [];
+};
 
   for (const operation of operations) {
-    if (isRichTextOperation(operation)) {
-      const currentBlock = nextNote.blocksById[operation.block_id];
-
-      if (!currentBlock || !isRichTextBlock(currentBlock)) {
-        flushPendingTextOps();
-        continue;
-      }
-
+    if (isTextEditingOperation(operation)) {
       if (pendingBlockId === operation.block_id) {
         pendingTextOps.push(operation);
         continue;
@@ -145,69 +203,58 @@ export const applyOperationsToNote = (
 
 
 export const insertBlock = (block: Block, afterId: string) => {
-  let createdBlockId: string | null = null;
-  let syncOperation: SyncType | null = null;
-
-  useActiveNoteStore.setState((state) => {
-    const note = state.activeNote;
-    if (!note) return state;
-
+  const sideEffect = updateActiveNote((note) => {
     const result = insertBlockAfter(note, block, afterId);
-    if (!result) return state;
-
-    createdBlockId = result.newBlock.id;
-    syncOperation = createPendingSyncOperation({
-      op: "create_block",
-      data: {
-        block: result.newBlock,
-        pos: result.pos,
-      },
-      note_id: note.id,
-      block_id: result.newBlock.id,
-    });
+    if (!result) return null;
 
     return {
-      activeNote: result.nextNote,
+      nextNote: result.nextNote,
+      sideEffect: {
+        createdBlockId: result.newBlock.id,
+        syncOperation: createPendingSyncOperation({
+          op: "create_block",
+          data: {
+            block: result.newBlock,
+            pos: result.pos,
+          },
+          note_id: note.id,
+          block_id: result.newBlock.id,
+        }),
+      },
     };
   });
 
-  if (syncOperation) {
-    useSyncStore.getState().enqueue(syncOperation);
+  if (sideEffect?.syncOperation) {
+    useSyncStore.getState().enqueue(sideEffect.syncOperation);
   }
 
-  return createdBlockId;
+  return sideEffect?.createdBlockId ?? null;
 };
 
 export const deleteBlock = (blockId: string) => {
-  let focusTargetId: string | null = null;
-  let syncOperation: SyncType | null = null;
-
-  useActiveNoteStore.setState((state) => {
-    const note = state.activeNote;
-    if (!note) return state;
-
+  const sideEffect = updateActiveNote((note) => {
     const result = removeBlockById(note, blockId);
-    if (!result) return state;
-
-    focusTargetId = result.focusTargetId;
-
-    syncOperation = createPendingSyncOperation({
-      op: "delete_block",
-      note_id: note.id,
-      block_id: blockId,
-      data: {},
-    });
+    if (!result) return null;
 
     return {
-      activeNote: result.nextNote,
+      nextNote: result.nextNote,
+      sideEffect: {
+        focusTargetId: result.focusTargetId,
+        syncOperation: createPendingSyncOperation({
+          op: "delete_block",
+          note_id: note.id,
+          block_id: blockId,
+          data: {},
+        }),
+      },
     };
   });
 
-  if (syncOperation) {
-    useSyncStore.getState().enqueue(syncOperation);
+  if (sideEffect?.syncOperation) {
+    useSyncStore.getState().enqueue(sideEffect.syncOperation);
   }
 
-  return focusTargetId;
+  return sideEffect?.focusTargetId ?? null;
 };
 
 export const updateBlockContent = <T extends BlockType>(
@@ -256,37 +303,24 @@ export const changeBlockType = (
   blockId: string,
   newType: BlockChangeType
 ) => {
-  let syncOperation: SyncType | null = null;
-  let didChange = false;
-
-  useActiveNoteStore.setState((state) => {
-    const note = state.activeNote;
-    if (!note) return state;
-
-    const block = note.blocksById[blockId];
-    if (!block) return state;
-
+  const syncOperation = updateActiveNote((note) => {
     const operation: ChangeBlockTypeOp = {
       op: "change_block_type",
       note_id: note.id,
       block_id: blockId,
-      data: {
-        new_type: newType,
-      },
+      data: { new_type: newType },
     };
 
     const nextNote = applyChangeBlockTypeOperation(note, operation);
-    if (!nextNote || nextNote === note) return state;
-
-    didChange = true;
-    syncOperation = createPendingSyncOperation(operation);
+    if (!nextNote || nextNote === note) return null;
 
     return {
-      activeNote: nextNote,
+      nextNote,
+      sideEffect: createPendingSyncOperation(operation),
     };
   });
 
-  if (didChange && syncOperation) {
+  if (syncOperation) {
     useSyncStore.getState().enqueue(syncOperation);
   }
 };

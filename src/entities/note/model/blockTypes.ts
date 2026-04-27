@@ -1,6 +1,3 @@
-
-
-
 export type BlockType = "text" | "list" | "header" | "img" | "link" | "code" | "file" | "quote";
 export type TextStyle = "default" | "bold" | "italic" | "underline";
 export type ListType = "ordered" | "unordered" | "todo";
@@ -30,7 +27,7 @@ export type TextBlockType = BaseBlockType & {
 export type ListBlockType = BaseBlockType & {
   type: "list",
   data: {
-     text_data: {
+    text_data: {
       text: TextSegmentType[]
     },
     level: ListLevel,
@@ -42,7 +39,7 @@ export type ListBlockType = BaseBlockType & {
 export type HeaderBlockType = BaseBlockType & {
   type: "header",
   data: {
-     text_data: {
+    text_data: {
       text: TextSegmentType[]
     },
     level: HeaderLevel,
@@ -87,28 +84,31 @@ export type FileBlockType = BaseBlockType & {
   }
 }
 
+export type RichTextBlock = TextBlockType | ListBlockType | HeaderBlockType;
+export type PlainTextBlock = QuoteBlockType | CodeBlockType;
+
+export type EditableTextBlock =
+  RichTextBlock |
+  PlainTextBlock;
+
 
 export type Block =
-  TextBlockType |
-  ListBlockType |
-  HeaderBlockType |
+  EditableTextBlock |
   ImgBlockType |
   LinkBlockType |
-  QuoteBlockType |
-  CodeBlockType |
   FileBlockType;
 
-  type BlockMap = {
-    text: TextBlockType;
-    list: ListBlockType;
-    header: HeaderBlockType;
-    img: ImgBlockType;
-    link: LinkBlockType;
-    quote: QuoteBlockType;
-    code: CodeBlockType;
-    file: FileBlockType;
-  };
-  
-  export type BlockByType<T extends BlockType> = BlockMap[T];
-  export type BlockDataByType<T extends BlockType> = BlockMap[T]["data"];
+type BlockMap = {
+  text: TextBlockType;
+  list: ListBlockType;
+  header: HeaderBlockType;
+  img: ImgBlockType;
+  link: LinkBlockType;
+  quote: QuoteBlockType;
+  code: CodeBlockType;
+  file: FileBlockType;
+};
+
+export type BlockByType<T extends BlockType> = BlockMap[T];
+export type BlockDataByType<T extends BlockType> = BlockMap[T]["data"];
 

@@ -1,3 +1,4 @@
+import { applyStyleToRange, deleteRange, ensureSegments, getStyleAt, insertTextAt, normalizeSegments } from "@/features/NoteEditor/lib/segmentsUtils";
 import {
   Block,
   BlockByType,
@@ -6,17 +7,10 @@ import {
   TextBlockType
 } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
-import { initBlock } from "./initBlock";
 import { ChangeBlockTypeOp, RichTextOperation } from "../model/operationsType";
-import {
-  deleteRange,
-  applyStyleToRange,
-  insertTextAt,
-  getStyleAt,
-  normalizeSegments,
-  ensureSegments
-} from "@/features/contenteditable";
+
 import { convertBlockType } from "./blockConversion";
+import { PlainTextBlockType } from "./blockGuards";
 
 export const insertBlockAfter = (
   note: ActiveNote,
@@ -168,3 +162,41 @@ export const applyChangeBlockTypeOperation = (
     },
   };
 };
+
+export const applyInsertTextToPlainTextBlock = <
+  T extends PlainTextBlockType
+>(
+  block: T,
+  pos: number,
+  newText: string
+): T => {
+  const text = block.data.text
+  const nextText = text.slice(0, pos) + newText + text.slice(pos)
+
+  return {
+    ...block,
+    data: {
+      ...block.data,
+      text: nextText,
+    },
+  }
+}
+
+export const applyDeleteRangeToPlainTextBlock = <
+  T extends PlainTextBlockType
+>(
+  block: T,
+  start: number,
+  end: number
+): T => {
+  const text = block.data.text
+  const nextText = text.slice(0, start) + text.slice(end)
+
+  return {
+    ...block,
+    data: {
+      ...block.data,
+      text: nextText,
+    },
+  }
+}

@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { HeaderBlockType } from '@/entities/note/model/blockTypes'
-import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './HeaderBlock.module.css'
+import TextSegment from '../TextSegment/TextSegment';
 
 const HeaderBlock = ({ id, data }: HeaderBlockType) => {
   const level = data?.level ?? 1;
@@ -22,7 +22,7 @@ const HeaderBlock = ({ id, data }: HeaderBlockType) => {
       {isEmpty
         ? <br />
         : text.map((item, index) => (
-            <TextSegmentType key={index} {...item} />
+            <TextSegment key={index} {...item} />
           ))}
     </h2>
   );

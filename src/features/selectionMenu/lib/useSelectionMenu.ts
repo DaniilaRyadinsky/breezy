@@ -1,9 +1,5 @@
+import { EditorSelection, getEditorSelection, setEditorSelection } from "@/features/NoteEditor/lib/editorSelection";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import {
-  EditorSelection,
-  getEditorSelection,
-  setEditorSelection,
-} from "../../contenteditable/lib/editorSelection";
 
 type SelectionMenuPosition = {
   top: number;

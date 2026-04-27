@@ -1,6 +1,6 @@
 import type { ListBlockType } from '@/entities/note/model/blockTypes';
-import TextSegmentType from '../TextSegment/TextSegment'
 import styles from './ListBlock.module.css'
+import TextSegment from '../TextSegment/TextSegment';
 
 const ListBlock = ({ id, data }: ListBlockType) => {
   const {
@@ -37,7 +37,7 @@ const ListBlock = ({ id, data }: ListBlockType) => {
           <br />
         ) : (
           text_data.text.map((item, index) => (
-            <TextSegmentType key={index} {...item} />
+            <TextSegment key={index} {...item} />
           ))
         )}
       </p>

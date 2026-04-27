@@ -78,7 +78,7 @@ export const processSyncQueue = async (batchSize = 4) => {
   const syncState = useSyncStore.getState();
 
   if (syncState.isRunning) return;
-  console.log("queue length before compacting:", syncState.queue.length);
+  console.log("queue length before compacting:", syncState);
 
   compactPendingQueue(true);
   useSyncStore.getState().setRunning(true);

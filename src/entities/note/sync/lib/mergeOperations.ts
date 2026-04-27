@@ -2,6 +2,8 @@ import { BlockType, Block } from "../../model/blockTypes";
 import {
   BlockOperation,
   RichTextOperation,
+  PlainTextEditOperation,
+  TextEditOperation,
   CreateBlockOp,
   DeleteBlockOp,
   ChangeTextOp,
@@ -11,10 +13,11 @@ import {
   ChangeUrlOp,
   ChangeLevelOp,
   ChangeValueOp,
-  ChangeListTypeOp
+  ChangeListTypeOp,
+  RichTextBlockType,
+  PlainTextBlockType,
 } from "../../model/operationsType";
 import { SyncType } from "../model/syncTypes";
-
 
 const findLast = <T,>(arr: T[], predicate: (item: T) => boolean): T | undefined => {
   for (let i = arr.length - 1; i >= 0; i--) {
@@ -30,16 +33,44 @@ const findLastIndex = <T,>(arr: T[], predicate: (item: T) => boolean): number =>
   return -1;
 };
 
-const isRichTextOp = (op: BlockOperation): op is RichTextOperation => {
-  return (
-    op.op === "insert_text" ||
-    op.op === "delete_range" ||
-    op.op === "apply_style"
-  );
-};
-
 const isCreateOp = (op: BlockOperation): op is CreateBlockOp => op.op === "create_block";
 const isDeleteOp = (op: BlockOperation): op is DeleteBlockOp => op.op === "delete_block";
+
+const isRichTextBlockType = (type: BlockType): type is RichTextBlockType => {
+  return type === "text" || type === "list" || type === "header";
+};
+
+const isPlainTextBlockType = (type: BlockType): type is PlainTextBlockType => {
+  return type === "quote" || type === "code";
+};
+
+
+type InsertDeleteOp = Extract<
+  BlockOperation,
+  { op: "insert_text" | "delete_range" }
+>;
+
+const isInsertDeleteOp = (
+  op: BlockOperation
+): op is InsertDeleteOp => {
+  return op.op === "insert_text" || op.op === "delete_range";
+};
+
+const isPlainTextEditOp = (
+  op: BlockOperation
+): op is PlainTextEditOperation => {
+  return isInsertDeleteOp(op) && isPlainTextBlockType(op.block_type);
+};
+
+const isRichTextOp = (
+  op: BlockOperation
+): op is RichTextOperation => {
+  if (op.op === "apply_style") {
+    return true;
+  }
+
+  return isInsertDeleteOp(op) && isRichTextBlockType(op.block_type);
+};
 
 const makeCompactedSync = (
   payload: BlockOperation,
@@ -61,9 +92,8 @@ const makeCompactedSync = (
   };
 };
 
-
-const mergeAdjacentStyles = (ops: RichTextOperation[]): RichTextOperation[] => {
-  const result: RichTextOperation[] = [];
+const mergeAdjacentStyles = (ops: TextEditOperation[]): TextEditOperation[] => {
+  const result: TextEditOperation[] = [];
 
   for (const op of ops) {
     const last = result[result.length - 1];
@@ -87,8 +117,8 @@ const mergeAdjacentStyles = (ops: RichTextOperation[]): RichTextOperation[] => {
   return result;
 };
 
-const compressRichTextOps = (ops: RichTextOperation[]): RichTextOperation[] => {
-  const result: RichTextOperation[] = [];
+const compressTextEditOps = (ops: TextEditOperation[]): TextEditOperation[] => {
+  const result: TextEditOperation[] = [];
 
   for (const current of ops) {
     const last = result[result.length - 1];
@@ -98,19 +128,16 @@ const compressRichTextOps = (ops: RichTextOperation[]): RichTextOperation[] => {
       continue;
     }
 
-    // 1. Склейка insert + insert
     if (last.op === "insert_text" && current.op === "insert_text") {
       const lastStart = last.data.pos;
       const lastEnd = last.data.pos + last.data.new_text.length;
       const curPos = current.data.pos;
 
-      // вставка в конец ранее вставленного текста
       if (curPos === lastEnd) {
         last.data.new_text += current.data.new_text;
         continue;
       }
 
-      // вставка внутрь ранее вставленного текста
       if (curPos >= lastStart && curPos <= lastEnd) {
         const offset = curPos - lastStart;
         last.data.new_text =
@@ -121,7 +148,6 @@ const compressRichTextOps = (ops: RichTextOperation[]): RichTextOperation[] => {
       }
     }
 
-    // 2. Склейка insert + delete, если удаление затрагивает только что вставленный кусок
     if (last.op === "insert_text" && current.op === "delete_range") {
       const insStart = last.data.pos;
       const insEnd = last.data.pos + last.data.new_text.length;
@@ -144,29 +170,22 @@ const compressRichTextOps = (ops: RichTextOperation[]): RichTextOperation[] => {
       }
     }
 
-    // 3. Склейка delete + delete только для простого случая:
-    // два соседних backspace/delete диапазона, идущих подряд
     if (last.op === "delete_range" && current.op === "delete_range") {
       const aStart = last.data.start;
       const aEnd = last.data.end;
       const bStart = current.data.start;
       const bEnd = current.data.end;
 
-      // соседние или пересекающиеся диапазоны
       if (bStart <= aEnd && bEnd >= aStart) {
         last.data.start = Math.min(aStart, bStart);
         last.data.end = Math.max(aEnd, bEnd);
         continue;
       }
 
-      // backspace серия: [4,5] потом [3,4] => [3,5]
       if (bEnd === aStart) {
         last.data.start = bStart;
         continue;
       }
-
-      // delete серия: [2,3] потом [2,3] в новом тексте.
-      // Здесь безопасно не схлопываем, иначе можно ошибиться в базовых координатах.
     }
 
     result.push(structuredClone(current));
@@ -175,30 +194,30 @@ const compressRichTextOps = (ops: RichTextOperation[]): RichTextOperation[] => {
   return mergeAdjacentStyles(result);
 };
 
-
 const mergeFieldOps = (ops: BlockOperation[], blockType: BlockType): BlockOperation[] => {
-  const richText = compressRichTextOps(ops.filter(isRichTextOp));
+  const richText = compressTextEditOps(ops.filter(isRichTextOp));
+  const plainText = compressTextEditOps(ops.filter(isPlainTextEditOp));
 
   switch (blockType) {
     case "text":
       return richText;
 
-    case "quote": {
-      const lastText = findLast(ops, (op): op is ChangeTextOp => op.op === "change_text");
-      return lastText ? [lastText] : [];
-    }
+    case "quote":
+      return plainText;
 
     case "code": {
-      const lastText = findLast(ops, (op): op is ChangeTextOp => op.op === "change_text");
-      const lastAnalyse = findLast(ops, (op): op is AnalyseLangOp => op.op === "analyse_lang");
+      const lastAnalyse = findLast(
+        ops,
+        (op): op is AnalyseLangOp => op.op === "analyse_lang"
+      );
 
-      // analyse_lang оставляем только если после него не было нового change_text
-      const lastTextIndex = findLastIndex(ops, (op) => op.op === "change_text");
+      const lastTextIndex = findLastIndex(ops, isPlainTextEditOp);
       const lastAnalyseIndex = findLastIndex(ops, (op) => op.op === "analyse_lang");
 
-      const result: BlockOperation[] = [];
-      if (lastText) result.push(lastText);
-      if (lastAnalyse && lastAnalyseIndex > lastTextIndex) result.push(lastAnalyse);
+      const result: BlockOperation[] = [...plainText];
+      if (lastAnalyse && lastAnalyseIndex > lastTextIndex) {
+        result.push(lastAnalyse);
+      }
 
       return result;
     }
@@ -284,12 +303,10 @@ export const compactSyncItems = (
     const createIndex = payloads.findIndex(isCreateOp);
     const deleteIndex = findLastIndex(payloads, isDeleteOp);
 
-    // create -> delete => всё исчезает
     if (createIndex !== -1 && deleteIndex > createIndex) {
       continue;
     }
 
-    // есть delete => оставляем только delete
     if (deleteIndex !== -1) {
       const deletePayload = payloads[deleteIndex] as DeleteBlockOp;
 
@@ -301,7 +318,6 @@ export const compactSyncItems = (
       continue;
     }
 
-    // есть create => оставляем только create с актуальным snapshot
     if (createIndex !== -1) {
       const createPayload = payloads[createIndex] as CreateBlockOp;
       const snapshot = getBlockSnapshot(noteId, blockId);
@@ -325,7 +341,6 @@ export const compactSyncItems = (
       continue;
     }
 
-    // иначе обычные операции по существующему блоку
     const snapshot = getBlockSnapshot(noteId, blockId);
     if (!snapshot) continue;
 

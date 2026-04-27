@@ -6,12 +6,11 @@ import TableContents from "./ui/TableContents/TableContents";
 import clsx from "clsx";
 import MainTitle from "./MainTitle/MainTitle";
 import { useAppStore } from "@/shared/model/AppStore";
-import { useRichTextEditor } from "../contenteditable";
 import { useRef, useCallback } from "react";
 import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
-import { useBlockStructureEditor } from "../contenteditable/useBlockStructureEditor";
 import { SelectionMenu } from "../selectionMenu/ui/SelectionMenu";
 import { BlockChangeType, getBlockChangeTypeFromBlock } from "@/entities/note/lib/blockChange";
+import { useDocumentEditor } from "./hooks/useDocumentEditor";
 
 const NoteEditorContent = () => {
   const activeNote = useActiveNoteStore((state) => state.activeNote);
@@ -32,12 +31,10 @@ const NoteEditorContent = () => {
     [registerEditorRoot]
   );
 
-  const { applyStyleToSelection } = useRichTextEditor(
+  const { applyStyleToSelection } = useDocumentEditor(
     editorRef,
     applyDocumentOperations
   );
-
-  useBlockStructureEditor(editorRef);
 
   const getBlockTypeById = useCallback(
     (blockId: string): BlockChangeType | null => {
