@@ -11,6 +11,8 @@ import { BaseBlock } from "./blocks/BaseBlock/BaseBlock";
 import { SelectionMenu } from "../selectionMenu/ui/SelectionMenu";
 import { BlockChangeType, getBlockChangeTypeFromBlock } from "@/entities/note/lib/blockChange";
 import { useDocumentEditor } from "./hooks/useDocumentEditor";
+import { useSlashMenu } from "../slashMenu/lib/useSlashMenu";
+import { SlashMenu } from "../slashMenu/ui/SlashMenu";
 
 const NoteEditorContent = () => {
   const activeNote = useActiveNoteStore((state) => state.activeNote);
@@ -31,10 +33,13 @@ const NoteEditorContent = () => {
     [registerEditorRoot]
   );
 
-  const { applyStyleToSelection } = useDocumentEditor(
-    editorRef,
-    applyDocumentOperations
-  );
+  const {
+    applyStyleToSelection,
+    isSlashMenuOpen,
+    slashMenuAnchorEl,
+    slashMenuBlockId,
+    closeSlashMenu,
+  } = useDocumentEditor(editorRef, applyDocumentOperations);
 
   const getBlockTypeById = useCallback(
     (blockId: string): BlockChangeType | null => {
@@ -42,6 +47,7 @@ const NoteEditorContent = () => {
     },
     [blocksById]
   );
+
 
   return (
     <div className={styles.container}>
@@ -68,6 +74,15 @@ const NoteEditorContent = () => {
           editorRef={editorRef}
           applyStyleToSelection={applyStyleToSelection}
           getBlockTypeById={getBlockTypeById}
+        />
+        <SlashMenu
+          open={isSlashMenuOpen}
+          anchorEl={slashMenuAnchorEl}
+          blockId={slashMenuBlockId}
+          currentBlockType={
+            slashMenuBlockId ? getBlockTypeById(slashMenuBlockId) : null
+          }
+          onClose={closeSlashMenu}
         />
       </div>
 

@@ -1,22 +1,33 @@
-import { RichTextBlock, TextStyle } from "@/entities/note/model/blockTypes";
+import { TextStyle } from "@/entities/note/model/blockTypes";
 import { BlockOperation } from "@/entities/note/model/operationsType";
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { RefObject, useRef, useCallback, useLayoutEffect, useEffect } from "react";
-import { PendingEditorSelection, EditorSelection } from "../lib/selection";
+import { RefObject, useRef, useCallback, useLayoutEffect, useEffect, useState } from "react";
+import { PendingEditorSelection, EditorSelection, getBlockElement, isCollapsedEditorSelection } from "../lib/selection";
 import { getEditableTextContext } from "../lib/getEditableTextContext";
-import { buildApplyStyleOperationsForRichBlocks, buildDeleteSelectionOperations } from "../lib/documentRichText";
-import { getEditorSelection, normalizeEditorSelection, setEditorSelection } from "../lib/editorSelection";
+import { buildDeleteSelectionOperations } from "../lib/documentRichText";
+import { setEditorSelection } from "../lib/selection";
 import { blockBehaviors } from "../model/behaviors/registry";
 import { ActiveNote } from "@/entities/note/model/noteTypes";
 import { richTextBaseBehavior } from "../model/behaviors/behaviors";
+import { getBlockPlainText } from "../lib/plainText";
 
 type ApplyDocumentOperations = (
   noteId: string,
   operations: BlockOperation[]
 ) => void;
 
+type SlashMenuState = {
+  anchorEl: HTMLElement | null;
+  blockId: string | null;
+};
+
 type UseDocumentEditorResult = {
   applyStyleToSelection: (style: TextStyle) => void;
+
+  isSlashMenuOpen: boolean;
+  slashMenuAnchorEl: HTMLElement | null;
+  slashMenuBlockId: string | null;
+  closeSlashMenu: () => void;
 };
 
 export const useDocumentEditor = (
@@ -26,6 +37,18 @@ export const useDocumentEditor = (
   const activeNote = useActiveNoteStore((state) => state.activeNote);
 
   const pendingSelectionRef = useRef<PendingEditorSelection | null>(null);
+
+  const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
+    anchorEl: null,
+    blockId: null,
+  });
+
+  const closeSlashMenu = useCallback(() => {
+    setSlashMenu({
+      anchorEl: null,
+      blockId: null,
+    });
+  }, []);
 
   const commitOperations = useCallback(
     (
@@ -70,27 +93,27 @@ export const useDocumentEditor = (
     pendingSelectionRef.current = null;
   }, [editorRef, activeNote]);
 
-const applyStyleToSelection = useCallback(
-  (style: TextStyle) => {
-    const root = editorRef.current;
-    if (!root) return;
+  const applyStyleToSelection = useCallback(
+    (style: TextStyle) => {
+      const root = editorRef.current;
+      if (!root) return;
 
-    const ctx = getEditableTextContext(root);
-    if (!ctx) return;
+      const ctx = getEditableTextContext(root);
+      if (!ctx) return;
 
-    if (!richTextBaseBehavior.applyStyleToSelection) return;
+      if (!richTextBaseBehavior.applyStyleToSelection) return;
 
-    richTextBaseBehavior.applyStyleToSelection({
-      note: ctx.note,
-      block: ctx.block as never,
-      selection: ctx.selection,
-      style,
-      commitOperations,
-      deleteSelection,
-    });
-  },
-  [editorRef, commitOperations, deleteSelection]
-);
+      richTextBaseBehavior.applyStyleToSelection({
+        note: ctx.note,
+        block: ctx.block as never,
+        selection: ctx.selection,
+        style,
+        commitOperations,
+        deleteSelection,
+      });
+    },
+    [editorRef, commitOperations, deleteSelection]
+  );
 
   useEffect(() => {
     const root = editorRef.current;
@@ -124,6 +147,30 @@ const applyStyleToSelection = useCallback(
 
       const ctx = getEditableTextContext(root);
       if (!ctx) return;
+
+      if (
+        event.inputType === "insertText" &&
+        event.data === "/" &&
+        isCollapsedEditorSelection(ctx.selection)
+      ) {
+        const blockText = getBlockPlainText(ctx.block);
+
+        if (blockText.trim() === "") {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          const blockEl = getBlockElement(root, ctx.block.id);
+
+          if (blockEl) {
+            setSlashMenu({
+              anchorEl: blockEl,
+              blockId: ctx.block.id,
+            });
+          }
+
+          return;
+        }
+      }
 
       const behavior = blockBehaviors[ctx.block.type];
       if (!behavior?.onBeforeInput) return;
@@ -176,5 +223,10 @@ const applyStyleToSelection = useCallback(
 
   return {
     applyStyleToSelection,
+
+    isSlashMenuOpen: Boolean(slashMenu.anchorEl && slashMenu.blockId),
+    slashMenuAnchorEl: slashMenu.anchorEl,
+    slashMenuBlockId: slashMenu.blockId,
+    closeSlashMenu,
   };
 };

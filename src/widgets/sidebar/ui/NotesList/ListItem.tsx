@@ -4,6 +4,23 @@ import PointsMenu from '@/shared/ui/PointsMenu/PointsMenu';
 import styles from './List.module.css'
 import { useNavigate } from 'react-router-dom';
 
+function formatDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return 'Вчера';
+  } else if (diffDays < 7) {
+    return date.toLocaleDateString('ru-RU', { weekday: 'short' });
+  } else {
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  }
+}
+
 export interface IListItem {
   item: NoteInfo,
   isSelected?: boolean,
@@ -46,7 +63,7 @@ export const ListItem = ({ item, isSelected }: IListItem) => {
         <div className={styles.bottom_container}>
           {item.tag !== null && <TagChip color={item.tag.color} text={item.tag.title} />}
 
-          <p className={styles.item_date}>{item.updated_at}</p>
+          <p className={styles.item_date}>{formatDate(item.updated_at)}</p>
         </div>
       </div>
     </li>

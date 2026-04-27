@@ -1,4 +1,4 @@
-import { EditorSelection, getEditorSelection, setEditorSelection } from "@/features/NoteEditor/lib/editorSelection";
+import { EditorSelection, getEditorSelection, setEditorSelection } from "@/features/NoteEditor/lib/selection";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 type SelectionMenuPosition = {

@@ -1,5 +1,5 @@
 import { getNoteList } from '@/entities/note/api/noteApi'
-import { Search } from '../../../Search'
+import { Search } from '../../../../features/Search'
 import List from '../NotesList/List'
 import styles from './panels.module.css'
 import { useQuery } from '@tanstack/react-query'

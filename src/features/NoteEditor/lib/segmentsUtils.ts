@@ -1,10 +1,6 @@
 import { TextStyle, TextSegmentType } from "@/entities/note/model/blockTypes";
 import { getSegmentsLength } from "./documentRichText";
-
-const EMPTY_SEGMENT: TextSegmentType = {
-  style: "default",
-  string: "",
-};
+import { EMPTY_SEGMENT } from "@/shared/lib/utils/normalizeTextData";
 
 export function ensureSegments(
   segments?: TextSegmentType[] | null

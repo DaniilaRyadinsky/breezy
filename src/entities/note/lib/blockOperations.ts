@@ -4,10 +4,11 @@ import {
   BlockByType,
   BlockDataByType,
   BlockType,
+  ListLevel,
   TextBlockType
 } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
-import { ChangeBlockTypeOp, RichTextOperation } from "../model/operationsType";
+import { ChangeBlockTypeOp, ChangeLevelOp, RichTextOperation } from "../model/operationsType";
 
 import { convertBlockType } from "./blockConversion";
 import { PlainTextBlockType } from "./blockGuards";
@@ -200,3 +201,22 @@ export const applyDeleteRangeToPlainTextBlock = <
     },
   }
 }
+
+export const applyChangeLevelOperation = (
+  note: ActiveNote,
+  operation: ChangeLevelOp<number>
+) => {
+  const block = note.blocksById[operation.block_id];
+
+  if (!block || block.type !== "list") {
+    return note;
+  }
+  if (operation.data.new_level > 4 || operation.data.new_level < 1) {
+    return note;
+  }
+
+  return updateBlock(note, block.id, block.type, {
+    ...block.data,
+    level: operation.data.new_level as ListLevel,
+  }) ?? note;
+};

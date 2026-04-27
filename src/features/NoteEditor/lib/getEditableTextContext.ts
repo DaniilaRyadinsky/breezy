@@ -2,7 +2,7 @@ import { isPlainTextBlock, isRichTextBlock } from "@/entities/note/lib/blockGuar
 import { EditableTextBlock } from "@/entities/note/model/blockTypes";
 
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { getEditorSelection, normalizeEditorSelection } from "./editorSelection";
+import { getEditorSelection, normalizeEditorSelection } from "./selection";
 
 export const getEditableTextContext = (root: HTMLElement) => {
   const note = useActiveNoteStore.getState().activeNote;

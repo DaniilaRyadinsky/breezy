@@ -1,7 +1,7 @@
 import { isRichTextBlock } from "@/entities/note/lib/blockGuards";
 import { Block, RichTextBlock, TextSegmentType, TextStyle } from "@/entities/note/model/blockTypes";
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { EditorSelection, getEditorSelection, isCollapsedEditorSelection, normalizeEditorSelection } from "./editorSelection";
+import { EditorSelection, getEditorSelection, isCollapsedEditorSelection, normalizeEditorSelection } from "./selection";
 import { ActiveNote } from "@/entities/note/model/noteTypes";
 import { BlockOperation } from "@/entities/note/model/operationsType";
 import { sliceSegments } from "./segmentsUtils";
@@ -100,7 +100,7 @@ type EditorNote = {
 };
 
 
-function segmentsToPlainText(segments: TextSegmentType[]): string {
+export function segmentsToPlainText(segments: TextSegmentType[]): string {
   return segments.map((seg) => seg.string).join("");
 }
 

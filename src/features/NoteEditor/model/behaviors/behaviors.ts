@@ -1,4 +1,4 @@
-import { RichTextBlock, TextStyle } from "@/entities/note/model/blockTypes";
+import { RichTextBlock } from "@/entities/note/model/blockTypes";
 import { BlockOperation } from "@/entities/note/model/operationsType";
 import { buildApplyStyleOperations, buildDeleteSelectionOperations, createRichTextBlockCopy, getSegmentsLength } from "../../lib/documentRichText";
 import { isCollapsedEditorSelection } from "../../lib/selection";

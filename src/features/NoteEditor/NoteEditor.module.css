@@ -1,20 +1,21 @@
 .container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
+    display: flex;
 }
 
 .note_editor {
-    width: calc(100% - 72px - 188px - 120px - 100px);
-    margin: 0px auto 20px auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0 100px 20px 20px;
     height: calc(100% - 20px - 30px - 60px);
     border-radius: 33px;
-    padding:30px 117px 60px 117px;
+    padding: 30px 117px 60px 197px;
     background-color: var(--md-sys-color-surface-container-lowest);
     overflow-y: auto;
     scrollbar-gutter: stable;
-    transition: width 0.3s;
+    transition: width 0.3s ease, margin 0.3s ease-in-out;
     caret-color: #000;
 }
 
@@ -24,7 +25,8 @@
 
 .sidebar_mode {
     width: calc(100% - 72px - 120px - 100px);
-    margin: 0px 100px 60px 20px;
+    margin: 0px 40px 60px 20px;
+    padding: 30px 50px 60px 50px;
 }
 
 .blocks_root {

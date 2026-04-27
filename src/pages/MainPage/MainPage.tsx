@@ -1,4 +1,4 @@
-import { Sidebar } from '@/features/sidebar'
+import { Sidebar } from '@/widgets/sidebar'
 import Topbar from '@/widgets/topbar/ui/topbar'
 import styles from './MainPage.module.css'
 import { NoteEditor } from '@/features/NoteEditor'

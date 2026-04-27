@@ -1,5 +1,5 @@
 import { BlockOperation, ChangeBlockTypeOp, RichTextOperation } from "@/entities/note/model/operationsType";
-import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation, applyDeleteRangeToPlainTextBlock, applyInsertTextToPlainTextBlock } from "../lib";
+import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation, applyDeleteRangeToPlainTextBlock, applyInsertTextToPlainTextBlock, applyChangeLevelOperation } from "../lib";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType, Block } from "./blockTypes";
@@ -99,6 +99,9 @@ export const applyStructuralOperationToNote = (
     case "change_block_type":
       return applyChangeBlockTypeOperation(note, operation) ?? note;
 
+    case "change_level":
+      return applyChangeLevelOperation(note, operation) ?? note;
+
     default:
       return note;
   }
@@ -172,12 +175,12 @@ export const applyOperationsToNote = (
   let pendingTextOps: TextEditingOperation[] = [];
 
   const flushPendingTextOps = () => {
-  if (!pendingBlockId || !pendingTextOps.length) return;
+    if (!pendingBlockId || !pendingTextOps.length) return;
 
-  nextNote = applyTextBatchToBlock(nextNote, pendingBlockId, pendingTextOps);
-  pendingBlockId = null;
-  pendingTextOps = [];
-};
+    nextNote = applyTextBatchToBlock(nextNote, pendingBlockId, pendingTextOps);
+    pendingBlockId = null;
+    pendingTextOps = [];
+  };
 
   for (const operation of operations) {
     if (isTextEditingOperation(operation)) {

@@ -67,3 +67,4 @@ export const isTextEditingOperation = (
     op.op === "apply_style"
   );
 };
+

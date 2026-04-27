@@ -1,1 +1,0 @@
-// Default insert text behavior

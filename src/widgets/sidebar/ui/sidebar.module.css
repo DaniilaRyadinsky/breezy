@@ -1,0 +1,43 @@
+.sidebar {
+  flex: 0 0 72px;
+  width: 72px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+
+  overflow: hidden;
+  transition: flex-basis 0.3s ease, width 0.3s ease;
+}
+
+.sidebar_visible {
+  flex-basis: 440px;
+  width: 440px;
+
+}
+
+.left_container {
+  flex: 0 0 72px;
+  width: 72px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.sidebar_panel {
+  flex: 0 0 368px;
+  padding-right: 26px;
+  width: 368px;
+    box-sizing: border-box;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar_panel_visible {
+  opacity: 1;
+  pointer-events: auto;
+}

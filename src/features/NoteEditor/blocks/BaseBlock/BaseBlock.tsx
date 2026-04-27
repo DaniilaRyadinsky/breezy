@@ -6,18 +6,20 @@ import { useActiveNoteStore } from '@/entities/note/model/store';
 import { useBlocksRegistry } from '@/features/navigation';
 import styles from './BaseBlock.module.css'
 import { CodeBlock } from '../CodeBlock/CodeBlock';
+import { normalizeBlockTextData } from '@/shared/lib/utils/normalizeTextData';
 
 type BaseBlockProps = {
     id: string;
 };
 
 export const BaseBlock = memo((props: BaseBlockProps) => {
-    const block = useActiveNoteStore((state) =>
+    const rawBlock = useActiveNoteStore((state) =>
         state.activeNote?.blocksById[props.id] ?? null
     );
 
-    if (!block) return null;
+    if (!rawBlock) return null;
 
+    const block = normalizeBlockTextData(rawBlock);
     const { registerBlock, unregisterBlock } = useBlocksRegistry();
 
     const setBlockRef = useCallback((node: HTMLDivElement | null) => {

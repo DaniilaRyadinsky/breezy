@@ -35,6 +35,7 @@ import {
 import { getAvailableBlockTypes } from "@/entities/note/lib/blockConversion";
 import { changeBlockType } from "@/entities/note/model/storeOperations";
 import { BlockChangeType, toBlockChangeTarget } from "@/entities/note/model/blockChangeTypes";
+import { BlockTypeMenu } from "@/shared/ui/BlockTypeMenu/BlockTypeMenu";
 
 interface ISelectionMenu {
   editorRef: RefObject<HTMLElement | null>;
@@ -236,51 +237,14 @@ export const SelectionMenu = ({
         </Paper>
       </Popover>
 
-      <Popper
+      <BlockTypeMenu
         open={isBlockMenuOpen}
         anchorEl={blockMenuAnchorEl}
-        placement="bottom-start"
-        modifiers={[
-          {
-            name: "offset",
-            options: {
-              offset: [0, 6],
-            },
-          },
-        ]}
-        sx={{
-          zIndex: 1400,
-        }}
-      >
-        <ClickAwayListener onClickAway={handleCloseBlockMenu}>
-          <Paper
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            sx={{
-              minWidth: 220,
-              py: 0.5,
-              borderRadius: 2,
-            }}
-          >
-            <List dense>
-              {availableBlockOptions.map((item) => (
-                <BlockListItem
-                  key={item.type}
-                  primary={item.label}
-                  Icon={item.icon}
-                  selected={item.type === currentBlockType}
-                  onClick={() => handleChangeBlock(item.type)}
-                />
-              ))}
-            </List>
-          </Paper>
-        </ClickAwayListener>
-      </Popper>
+        options={availableBlockOptions}
+        selectedType={currentBlockType}
+        onClose={handleCloseBlockMenu}
+        onSelect={handleChangeBlock}
+      />
     </>
   );
 };

@@ -1,1 +1,0 @@
-// Default delete selection behavior
