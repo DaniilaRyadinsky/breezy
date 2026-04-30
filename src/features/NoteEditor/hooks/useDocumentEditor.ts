@@ -1,16 +1,15 @@
 import { TextStyle } from "@/entities/note/model/blockTypes";
 import { BlockOperation } from "@/entities/note/model/operationsType";
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { RefObject, useRef, useCallback, useLayoutEffect, useEffect, useState } from "react";
+import { RefObject, useCallback, useEffect, useState } from "react";
 import { PendingEditorSelection, EditorSelection, getBlockElement, isCollapsedEditorSelection } from "../lib/selection";
-import { getEditableTextContext } from "../lib/getEditableTextContext";
-import { buildDeleteSelectionOperations } from "../lib/documentRichText";
-import { setEditorSelection } from "../lib/selection";
+import { getEditableTextContext, getEditorSelectionContext } from "../lib/getEditableTextContext";
+import { buildApplyStyleOperations, buildDeleteSelectionOperations } from "../lib/documentRichText";
 import { blockBehaviors } from "../model/behaviors/registry";
 import { ActiveNote } from "@/entities/note/model/noteTypes";
 import { richTextBaseBehavior } from "../model/behaviors/behaviors";
 import { getBlockPlainText } from "../lib/plainText";
-import { getBlockContextFromEvent } from "../lib/getBlockContextFromEvent";
+import { getBlockContextFromElement, getBlockContextFromEvent } from "../lib/getBlockContextFromEvent";
 
 type ApplyDocumentOperations = (
   noteId: string,
@@ -20,6 +19,7 @@ type ApplyDocumentOperations = (
 type SlashMenuState = {
   anchorEl: HTMLElement | null;
   blockId: string | null;
+  selection: PendingEditorSelection | null;
 };
 
 type UseDocumentEditorResult = {
@@ -29,25 +29,25 @@ type UseDocumentEditorResult = {
   slashMenuAnchorEl: HTMLElement | null;
   slashMenuBlockId: string | null;
   closeSlashMenu: () => void;
+  slashMenuSelection: PendingEditorSelection | null;
 };
 
 export const useDocumentEditor = (
   editorRef: RefObject<HTMLElement | null>,
-  onOperations: ApplyDocumentOperations
+  onOperations: ApplyDocumentOperations,
+  setPendingSelection: (selection: PendingEditorSelection) => void
 ): UseDocumentEditorResult => {
-  const activeNote = useActiveNoteStore((state) => state.activeNote);
-
-  const pendingSelectionRef = useRef<PendingEditorSelection | null>(null);
-
   const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
     anchorEl: null,
     blockId: null,
+    selection: null,
   });
 
   const closeSlashMenu = useCallback(() => {
     setSlashMenu({
       anchorEl: null,
       blockId: null,
+      selection: null,
     });
   }, []);
 
@@ -60,7 +60,7 @@ export const useDocumentEditor = (
 
       if (!noteId || operations.length === 0) return;
 
-      pendingSelectionRef.current = nextSelection;
+      setPendingSelection(nextSelection);
       onOperations(noteId, operations);
     },
     [onOperations]
@@ -84,37 +84,28 @@ export const useDocumentEditor = (
     [commitOperations]
   );
 
-  useLayoutEffect(() => {
+
+const applyStyleToSelection = useCallback(
+  (style: TextStyle) => {
     const root = editorRef.current;
-    const pending = pendingSelectionRef.current;
+    if (!root) return;
 
-    if (!root || !pending) return;
+    const ctx = getEditorSelectionContext(root);
+    if (!ctx) return;
 
-    setEditorSelection(root, pending);
-    pendingSelectionRef.current = null;
-  }, [editorRef, activeNote]);
+    const result = buildApplyStyleOperations({
+      noteId: ctx.note.id,
+      note: ctx.note,
+      selection: ctx.selection,
+      style,
+    });
 
-  const applyStyleToSelection = useCallback(
-    (style: TextStyle) => {
-      const root = editorRef.current;
-      if (!root) return;
+    if (!result || result.operations.length === 0) return;
 
-      const ctx = getEditableTextContext(root);
-      if (!ctx) return;
-
-      if (!richTextBaseBehavior.applyStyleToSelection) return;
-
-      richTextBaseBehavior.applyStyleToSelection({
-        note: ctx.note,
-        block: ctx.block as never,
-        selection: ctx.selection,
-        style,
-        commitOperations,
-        deleteSelection,
-      });
-    },
-    [editorRef, commitOperations, deleteSelection]
-  );
+    commitOperations(result.operations, result.nextSelection);
+  },
+  [editorRef, commitOperations]
+);
 
   useEffect(() => {
     const root = editorRef.current;
@@ -123,9 +114,19 @@ export const useDocumentEditor = (
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.isComposing) return;
 
+      const activeElement =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+
+      const activeVoidBlock = activeElement?.closest<HTMLElement>(
+        "[data-block-id][data-void-block='true']"
+      );
+
       const ctx =
-        getEditableTextContext(root) ??
-        getBlockContextFromEvent(root, event);
+        activeVoidBlock && root.contains(activeVoidBlock)
+          ? getBlockContextFromElement(root, activeVoidBlock)
+          : getEditableTextContext(root) ?? getBlockContextFromEvent(root, event);
 
       if (!ctx) return;
 
@@ -169,6 +170,7 @@ export const useDocumentEditor = (
             setSlashMenu({
               anchorEl: blockEl,
               blockId: ctx.block.id,
+              selection: ctx.selection,
             });
           }
 
@@ -231,6 +233,7 @@ export const useDocumentEditor = (
     isSlashMenuOpen: Boolean(slashMenu.anchorEl && slashMenu.blockId),
     slashMenuAnchorEl: slashMenu.anchorEl,
     slashMenuBlockId: slashMenu.blockId,
+    slashMenuSelection: slashMenu.selection,
     closeSlashMenu,
   };
 };

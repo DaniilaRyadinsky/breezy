@@ -47,6 +47,7 @@ export const listBehavior: BlockBehavior<ListBlockType> = {
               op: "change_level",
               note_id: ctx.note.id,
               block_id: ctx.block.id,
+              block_type: 'list',
               data: {
                 new_level: newLevel,
               },
@@ -73,6 +74,7 @@ export const listBehavior: BlockBehavior<ListBlockType> = {
               op: "change_block_type",
               note_id: ctx.note.id,
               block_id: ctx.block.id,
+              block_type: 'list',
               data: {
                 new_type: "text",
               },
@@ -114,6 +116,7 @@ export const listBehavior: BlockBehavior<ListBlockType> = {
             op: "change_level",
             note_id: ctx.note.id,
             block_id: ctx.block.id,
+            block_type: 'list',
             data: {
               new_level: newLevel,
             },

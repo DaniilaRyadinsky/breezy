@@ -29,7 +29,7 @@ export const compactPendingQueue = (force = false) => {
 
   if (pending.length <= 1) return;
 
-  const compactedPending = compactSyncItems(pending, getBlockSnapshot);
+  const compactedPending = compactSyncItems(pending);
 
   let inserted = false;
   const nextQueue: typeof queue = [];

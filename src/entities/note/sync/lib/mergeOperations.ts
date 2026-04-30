@@ -1,4 +1,5 @@
-import { BlockType, Block } from "../../model/blockTypes";
+import { BlockType } from "../../model/blockTypes";
+import { toBlockChangeTarget } from "../../model/blockChangeTypes";
 import {
   BlockOperation,
   RichTextOperation,
@@ -6,6 +7,7 @@ import {
   TextEditOperation,
   CreateBlockOp,
   DeleteBlockOp,
+  ChangeBlockTypeOp,
   ChangeTextOp,
   AnalyseLangOp,
   ChangeSrcOp,
@@ -19,31 +21,63 @@ import {
 } from "../../model/operationsType";
 import { SyncType } from "../model/syncTypes";
 
-const findLast = <T,>(arr: T[], predicate: (item: T) => boolean): T | undefined => {
+function findLast<T, S extends T>(
+  arr: T[],
+  predicate: (item: T) => item is S
+): S | undefined;
+
+function findLast<T>(
+  arr: T[],
+  predicate: (item: T) => boolean
+): T | undefined;
+
+function findLast<T>(
+  arr: T[],
+  predicate: (item: T) => boolean
+): T | undefined {
   for (let i = arr.length - 1; i >= 0; i--) {
     if (predicate(arr[i])) return arr[i];
   }
-  return undefined;
-};
 
-const findLastIndex = <T,>(arr: T[], predicate: (item: T) => boolean): number => {
+  return undefined;
+}
+
+const findLastIndex = <T,>(
+  arr: T[],
+  predicate: (item: T) => boolean
+): number => {
   for (let i = arr.length - 1; i >= 0; i--) {
     if (predicate(arr[i])) return i;
   }
+
   return -1;
 };
 
-const isCreateOp = (op: BlockOperation): op is CreateBlockOp => op.op === "create_block";
-const isDeleteOp = (op: BlockOperation): op is DeleteBlockOp => op.op === "delete_block";
+const isCreateOp = (op: BlockOperation): op is CreateBlockOp => {
+  return op.op === "create_block";
+};
 
-const isRichTextBlockType = (type: BlockType): type is RichTextBlockType => {
+const isDeleteOp = (op: BlockOperation): op is DeleteBlockOp => {
+  return op.op === "delete_block";
+};
+
+const isChangeBlockTypeOp = (
+  op: BlockOperation
+): op is ChangeBlockTypeOp => {
+  return op.op === "change_block_type";
+};
+
+const isRichTextBlockType = (
+  type: BlockType
+): type is RichTextBlockType => {
   return type === "text" || type === "list" || type === "header";
 };
 
-const isPlainTextBlockType = (type: BlockType): type is PlainTextBlockType => {
+const isPlainTextBlockType = (
+  type: BlockType
+): type is PlainTextBlockType => {
   return type === "quote" || type === "code";
 };
-
 
 type InsertDeleteOp = Extract<
   BlockOperation,
@@ -66,10 +100,35 @@ const isRichTextOp = (
   op: BlockOperation
 ): op is RichTextOperation => {
   if (op.op === "apply_style") {
-    return true;
+    return isRichTextBlockType(op.block_type);
   }
 
   return isInsertDeleteOp(op) && isRichTextBlockType(op.block_type);
+};
+
+type BlockOperationWithBlockType = Extract<
+  BlockOperation,
+  { block_type: BlockType }
+>;
+
+const hasBlockType = (
+  op: BlockOperation
+): op is BlockOperationWithBlockType => {
+  return "block_type" in op;
+};
+
+const getFinalBlockTypeFromOps = (
+  ops: BlockOperation[]
+): BlockType | null => {
+  const lastChangeBlockType = findLast(ops, isChangeBlockTypeOp);
+
+  if (lastChangeBlockType) {
+    return toBlockChangeTarget(lastChangeBlockType.data.new_type).type;
+  }
+
+  const lastTypedOp = findLast(ops, hasBlockType);
+
+  return lastTypedOp?.block_type ?? null;
 };
 
 const makeCompactedSync = (
@@ -92,7 +151,9 @@ const makeCompactedSync = (
   };
 };
 
-const mergeAdjacentStyles = (ops: TextEditOperation[]): TextEditOperation[] => {
+const mergeAdjacentStyles = (
+  ops: TextEditOperation[]
+): TextEditOperation[] => {
   const result: TextEditOperation[] = [];
 
   for (const op of ops) {
@@ -117,7 +178,9 @@ const mergeAdjacentStyles = (ops: TextEditOperation[]): TextEditOperation[] => {
   return result;
 };
 
-const compressTextEditOps = (ops: TextEditOperation[]): TextEditOperation[] => {
+const compressTextEditOps = (
+  ops: TextEditOperation[]
+): TextEditOperation[] => {
   const result: TextEditOperation[] = [];
 
   for (const current of ops) {
@@ -140,10 +203,12 @@ const compressTextEditOps = (ops: TextEditOperation[]): TextEditOperation[] => {
 
       if (curPos >= lastStart && curPos <= lastEnd) {
         const offset = curPos - lastStart;
+
         last.data.new_text =
           last.data.new_text.slice(0, offset) +
           current.data.new_text +
           last.data.new_text.slice(offset);
+
         continue;
       }
     }
@@ -194,7 +259,10 @@ const compressTextEditOps = (ops: TextEditOperation[]): TextEditOperation[] => {
   return mergeAdjacentStyles(result);
 };
 
-const mergeFieldOps = (ops: BlockOperation[], blockType: BlockType): BlockOperation[] => {
+const mergeFieldOps = (
+  ops: BlockOperation[],
+  blockType: BlockType
+): BlockOperation[] => {
   const richText = compressTextEditOps(ops.filter(isRichTextOp));
   const plainText = compressTextEditOps(ops.filter(isPlainTextEditOp));
 
@@ -208,13 +276,19 @@ const mergeFieldOps = (ops: BlockOperation[], blockType: BlockType): BlockOperat
     case "code": {
       const lastAnalyse = findLast(
         ops,
-        (op): op is AnalyseLangOp => op.op === "analyse_lang"
+        (op): op is AnalyseLangOp =>
+          op.op === "analyse_lang" && op.block_type === "code"
       );
 
       const lastTextIndex = findLastIndex(ops, isPlainTextEditOp);
-      const lastAnalyseIndex = findLastIndex(ops, (op) => op.op === "analyse_lang");
+
+      const lastAnalyseIndex = findLastIndex(
+        ops,
+        (op) => op.op === "analyse_lang" && op.block_type === "code"
+      );
 
       const result: BlockOperation[] = [...plainText];
+
       if (lastAnalyse && lastAnalyseIndex > lastTextIndex) {
         result.push(lastAnalyse);
       }
@@ -223,46 +297,86 @@ const mergeFieldOps = (ops: BlockOperation[], blockType: BlockType): BlockOperat
     }
 
     case "file": {
-      const lastSrc = findLast(ops, (op): op is ChangeSrcOp => op.op === "change_src");
+      const lastSrc = findLast(
+        ops,
+        (op): op is ChangeSrcOp =>
+          op.op === "change_src" && op.block_type === "file"
+      );
+
       return lastSrc ? [lastSrc] : [];
     }
 
     case "img": {
-      const lastSrc = findLast(ops, (op): op is ChangeSrcOp => op.op === "change_src");
-      const lastAlt = findLast(ops, (op): op is ChangeAltOp => op.op === "change_alt");
+      const lastSrc = findLast(
+        ops,
+        (op): op is ChangeSrcOp =>
+          op.op === "change_src" && op.block_type === "img"
+      );
+
+      const lastAlt = findLast(
+        ops,
+        (op): op is ChangeAltOp =>
+          op.op === "change_alt" && op.block_type === "img"
+      );
 
       const result: BlockOperation[] = [];
+
       if (lastSrc) result.push(lastSrc);
       if (lastAlt) result.push(lastAlt);
+
       return result;
     }
 
     case "link": {
-      const lastText = findLast(ops, (op): op is ChangeTextOp => op.op === "change_text");
-      const lastUrl = findLast(ops, (op): op is ChangeUrlOp => op.op === "change_url");
+      const lastText = findLast(
+        ops,
+        (op): op is ChangeTextOp =>
+          op.op === "change_text" && op.block_type === "link"
+      );
+
+      const lastUrl = findLast(
+        ops,
+        (op): op is ChangeUrlOp =>
+          op.op === "change_url" && op.block_type === "link"
+      );
 
       const result: BlockOperation[] = [];
+
       if (lastText) result.push(lastText);
       if (lastUrl) result.push(lastUrl);
+
       return result;
     }
 
     case "header": {
-      const lastLevel = findLast(ops, (op): op is ChangeLevelOp => op.op === "change_level");
-      const result: BlockOperation[] = [...richText];
-      if (lastLevel) result.push(lastLevel);
-      return result;
+      return richText;
     }
 
     case "list": {
-      const lastLevel = findLast(ops, (op): op is ChangeLevelOp => op.op === "change_level");
-      const lastValue = findLast(ops, (op): op is ChangeValueOp => op.op === "change_value");
-      const lastType = findLast(ops, (op): op is ChangeListTypeOp => op.op === "change_type");
+      const lastLevel = findLast(
+        ops,
+        (op): op is ChangeLevelOp =>
+          op.op === "change_level" && op.block_type === "list"
+      );
+
+      const lastValue = findLast(
+        ops,
+        (op): op is ChangeValueOp =>
+          op.op === "change_value" && op.block_type === "list"
+      );
+
+      const lastType = findLast(
+        ops,
+        (op): op is ChangeListTypeOp =>
+          op.op === "change_type" && op.block_type === "list"
+      );
 
       const result: BlockOperation[] = [...richText];
+
       if (lastLevel) result.push(lastLevel);
       if (lastValue) result.push(lastValue);
       if (lastType) result.push(lastType);
+
       return result;
     }
 
@@ -271,12 +385,7 @@ const mergeFieldOps = (ops: BlockOperation[], blockType: BlockType): BlockOperat
   }
 };
 
-type GetBlockSnapshot = (noteId: string, blockId: string) => Block | undefined;
-
-export const compactSyncItems = (
-  items: SyncType[],
-  getBlockSnapshot: GetBlockSnapshot
-): SyncType[] => {
+export const compactSyncItems = (items: SyncType[]): SyncType[] => {
   const groups = new Map<string, { order: number; items: SyncType[] }>();
 
   items.forEach((item, index) => {
@@ -296,10 +405,6 @@ export const compactSyncItems = (
     const sourceItems = group.items;
     const payloads = sourceItems.map((x) => x.payload);
 
-    const first = payloads[0];
-    const noteId = first.note_id;
-    const blockId = first.block_id;
-
     const createIndex = payloads.findIndex(isCreateOp);
     const deleteIndex = findLastIndex(payloads, isDeleteOp);
 
@@ -308,7 +413,7 @@ export const compactSyncItems = (
     }
 
     if (deleteIndex !== -1) {
-      const deletePayload = payloads[deleteIndex] as DeleteBlockOp;
+      const deletePayload = payloads[deleteIndex];
 
       compacted.push({
         order: group.order,
@@ -319,36 +424,47 @@ export const compactSyncItems = (
     }
 
     if (createIndex !== -1) {
-      const createPayload = payloads[createIndex] as CreateBlockOp;
-      const snapshot = getBlockSnapshot(noteId, blockId);
-
       compacted.push({
         order: group.order,
-        items: [
-          makeCompactedSync(
-            {
-              ...createPayload,
-              data: {
-                ...createPayload.data,
-                block: snapshot ?? createPayload.data.block,
-              },
-            },
-            sourceItems
-          ),
-        ],
+        items: sourceItems,
       });
 
       continue;
     }
 
-    const snapshot = getBlockSnapshot(noteId, blockId);
-    if (!snapshot) continue;
+    const changeTypeIndex = findLastIndex(payloads, isChangeBlockTypeOp);
 
-    const mergedPayloads = mergeFieldOps(payloads, snapshot.type);
+    const changeTypePayload =
+      changeTypeIndex !== -1 ? payloads[changeTypeIndex] : undefined;
+
+    const opsAfterTypeChange =
+      changeTypeIndex !== -1 ? payloads.slice(changeTypeIndex + 1) : payloads;
+
+    const finalBlockType = getFinalBlockTypeFromOps(payloads);
+
+    if (!finalBlockType) {
+      compacted.push({
+        order: group.order,
+        items: sourceItems,
+      });
+
+      continue;
+    }
+
+    const mergedFieldPayloads = mergeFieldOps(
+      opsAfterTypeChange,
+      finalBlockType
+    );
+
+    const mergedPayloads: BlockOperation[] = changeTypePayload
+      ? [changeTypePayload, ...mergedFieldPayloads]
+      : mergedFieldPayloads;
 
     compacted.push({
       order: group.order,
-      items: mergedPayloads.map((payload) => makeCompactedSync(payload, sourceItems)),
+      items: mergedPayloads.map((payload) =>
+        makeCompactedSync(payload, sourceItems)
+      ),
     });
   }
 

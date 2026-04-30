@@ -10,6 +10,8 @@ import { BLOCK_OPTIONS } from "@/shared/consts/blockMenuOptions";
 import { BlockTypeMenu } from "@/shared/ui/BlockTypeMenu/BlockTypeMenu";
 import { useActiveNoteStore } from "@/entities/note/model/store";
 import { uploadFile } from "@/shared/api/uploadFile";
+import { PendingEditorSelection } from "@/features/NoteEditor/lib/selection";
+import { BlockType } from "@/entities/note/model/blockTypes";
 
 
 
@@ -18,7 +20,10 @@ type SlashMenuProps = {
   anchorEl: HTMLElement | null;
   blockId: string | null;
   currentBlockType: BlockChangeType | null;
+  selection: PendingEditorSelection | null;
+  onPendingSelection: (selection: PendingEditorSelection) => void;
   onClose: () => void;
+  onAfterSelect?: (type: BlockChangeType) => void;
 };
 
 export const SlashMenu = ({
@@ -26,7 +31,10 @@ export const SlashMenu = ({
   anchorEl,
   blockId,
   currentBlockType,
+  selection,
+  onPendingSelection,
   onClose,
+  onAfterSelect,
 }: SlashMenuProps) => {
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -41,45 +49,84 @@ export const SlashMenu = ({
     return BLOCK_OPTIONS.filter((item) => allowed.has(item.type));
   }, [currentBlockType]);
 
-  const pendingFileBlockIdRef = useRef<string | null>(null);
+  const pendingFileBlockRef = useRef<{
+    blockId: string;
+    previousBlockType: BlockType;
+  } | null>(null);
+
+  const getFallbackSelection = (blockId: string): PendingEditorSelection => {
+    return (
+      selection ?? {
+        start: {
+          blockId,
+          offset: 0,
+        },
+        end: {
+          blockId,
+          offset: 0,
+        },
+      }
+    );
+  };
 
   const handleSelect = (type: BlockChangeType) => {
     if (!blockId) return;
+    if (!currentBlockType) return;
+
+    const currentBaseBlockType = toBlockChangeTarget(currentBlockType).type;
+    const nextSelection = getFallbackSelection(blockId);
 
     if (type === "img") {
-      pendingFileBlockIdRef.current = blockId;
-      onClose();
+      onPendingSelection(nextSelection);
 
-      requestAnimationFrame(() => {
-        imageInputRef.current?.click();
-      });
+      pendingFileBlockRef.current = {
+        blockId,
+        previousBlockType: currentBaseBlockType,
+      };
+
+      imageInputRef.current?.click();
+
+      onClose();
+      onAfterSelect?.(type);
 
       return;
     }
 
     if (type === "file") {
-      pendingFileBlockIdRef.current = blockId;
-      onClose();
+      onPendingSelection(nextSelection);
 
-      requestAnimationFrame(() => {
-        fileInputRef.current?.click();
-      });
+      pendingFileBlockRef.current = {
+        blockId,
+        previousBlockType: currentBaseBlockType,
+      };
+
+      fileInputRef.current?.click();
+
+      onClose();
+      onAfterSelect?.(type);
 
       return;
     }
 
-    changeBlockType(blockId, type);
+    onPendingSelection(nextSelection);
+
+    changeBlockType(blockId, currentBaseBlockType, type);
+
     onClose();
+    onAfterSelect?.(type);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'img' | 'file') => {
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "img" | "file"
+  ) => {
     const file = e.target.files?.[0];
-    const targetBlockId = pendingFileBlockIdRef.current;
+    const pendingFileBlock = pendingFileBlockRef.current;
 
-    pendingFileBlockIdRef.current = null;
+    pendingFileBlockRef.current = null;
     e.target.value = "";
 
-    if (!file || !targetBlockId) return;
+    if (!file || !pendingFileBlock) return;
 
     const noteId = useActiveNoteStore.getState().activeNote?.id;
     if (!noteId) return;
@@ -87,15 +134,20 @@ export const SlashMenu = ({
     try {
       const { name } = await uploadFile(file);
 
-      changeBlockType(targetBlockId, type);
+      changeBlockType(
+        pendingFileBlock.blockId,
+        pendingFileBlock.previousBlockType,
+        type
+      );
 
       applyDocumentOperations(noteId, [
         {
           op: "change_src",
           note_id: noteId,
-          block_id: targetBlockId,
+          block_id: pendingFileBlock.blockId,
+          block_type: type,
           data: {
-            new_src: `files/${name}`,
+            new_src: `images/${name}`,
           },
         },
       ]);
@@ -103,8 +155,6 @@ export const SlashMenu = ({
       console.error("Не удалось загрузить файл", error);
     }
   };
-
-
   return (
     <>
       <BlockTypeMenu

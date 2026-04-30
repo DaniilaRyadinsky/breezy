@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createNoteApi, getNoteApi, patchTitleApi } from "../api/noteApi"
 import { useActiveNoteStore } from "../model/store";
+import { useNavigate } from "react-router-dom";
 
 export const useNoteMutations = () => {
   const qc = useQueryClient()
   const selectNote = useActiveNoteStore(s => s.selectNote);
+  const navigate = useNavigate();
 
   const getNote = async (id: string) => {
     const data = await qc.fetchQuery({
@@ -17,7 +19,7 @@ export const useNoteMutations = () => {
   const createNoteMutation = useMutation({
     mutationFn: ({title, note_id}: {title: string, note_id: string}) => createNoteApi(title, note_id),
     onSuccess: async (res) => {
-      getNote(res.id);
+      navigate(`/notes/${res.id}`);
       qc.invalidateQueries({ queryKey: ["notesList"] });
     },
   })
@@ -52,10 +54,8 @@ export const useNoteMutations = () => {
     }
   })
 
-  const createNote = (title: string, onSuccess?: () => void) => {
-    createNoteMutation.mutate({ title, note_id: crypto.randomUUID() }, {
-      onSuccess: () => onSuccess?.(),
-    })
+  const createNote = (title: string) => {
+    createNoteMutation.mutate({ title, note_id: crypto.randomUUID() })
   }
 
 

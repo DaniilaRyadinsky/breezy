@@ -8,7 +8,7 @@ import { useAppStore } from '@/shared/model/AppStore'
 import {ArchiveIcon, CreateIcon, NotesIcon} from '@/shared/assets/icons'
 import { BasketIcon } from '@/shared/ui/icons/BasketIcon'
 import { TagsIcon } from '@/shared/ui/icons/TagsIcon'
-import { useNavigate } from 'react-router-dom'
+import { useNoteMutations } from '@/entities/note/lib/useNoteMuttion'
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 
@@ -18,10 +18,10 @@ export const Sidebar = () => {
 
   const [mode, setMode] = useState<sidebarModes>('notes')
 
-  const navigate = useNavigate();
+  const {createNote} = useNoteMutations();
 
   const handleCreateClick = () => {
-    navigate('/');
+   createNote('Untitled');
   }
 
   const handleChangeModeClick = (mode: sidebarModes) => {

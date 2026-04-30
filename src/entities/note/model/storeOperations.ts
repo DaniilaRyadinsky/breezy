@@ -307,6 +307,7 @@ export const applyDocumentOperations = (
 
 export const changeBlockType = (
   blockId: string,
+  type: BlockType,
   newType: BlockChangeType
 ) => {
   console.log("Changing block type", blockId, newType);
@@ -315,6 +316,7 @@ export const changeBlockType = (
       op: "change_block_type",
       note_id: note.id,
       block_id: blockId,
+      block_type: type,
       data: { new_type: newType },
     };
 

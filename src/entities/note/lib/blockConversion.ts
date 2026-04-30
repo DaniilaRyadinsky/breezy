@@ -8,8 +8,8 @@ export const ALLOWED_BLOCK_CONVERSIONS: Record<BlockType, readonly BlockType[]> 
   quote: ["quote", "text", "header", "list", "code", "link"],
   code: ["code", "text", "quote"],
   link: ["link", "text", "quote"],
-  img: ["img"],
-  file: ["file"],
+  img: ["img", 'text'],
+  file: ["file", 'text'],
 };
 
 function cloneTextSegments(segments: TextSegmentType[]): TextSegmentType[] {

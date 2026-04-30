@@ -33,11 +33,15 @@ export const BaseBlock = memo((props: BaseBlockProps) => {
         }
     }, [props.id, registerBlock, unregisterBlock]);
 
+    const isVoidBlock = block.type === "img" || block.type === "file";
+
     return (
         <div
             className={styles.container}
             data-block-id={props.id}
             data-block-type={block.type}
+            data-void-block={isVoidBlock ? "true" : undefined}
+            tabIndex={isVoidBlock ? 0 : undefined}
             ref={setBlockRef}
         >
             {block.type === "text" && <TextBlock {...block} />}

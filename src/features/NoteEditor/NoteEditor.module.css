@@ -32,3 +32,8 @@
 .blocks_root {
     outline: none;
 }
+
+.after_blocks_area {
+  min-height: 120px;
+  cursor: text;
+}

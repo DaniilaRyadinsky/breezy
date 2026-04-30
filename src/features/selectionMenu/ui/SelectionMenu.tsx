@@ -1,18 +1,15 @@
 import {
   Popover,
-  Popper,
   Paper,
   Stack,
   IconButton,
   ButtonBase,
-  List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
   Tooltip,
-  ClickAwayListener,
 } from "@mui/material";
 import React, { RefObject, useEffect, useMemo, useState } from "react";
 import { useSelectionMenu } from "../lib/useSelectionMenu";
@@ -32,17 +29,16 @@ import {
   Link2,
   FileText,
 } from "lucide-react";
-import { getAvailableBlockTypes } from "@/entities/note/lib/blockConversion";
-import { changeBlockType } from "@/entities/note/model/storeOperations";
-import { BlockChangeType, toBlockChangeTarget } from "@/entities/note/model/blockChangeTypes";
-import { BlockTypeMenu } from "@/shared/ui/BlockTypeMenu/BlockTypeMenu";
+import { BlockChangeType } from "@/entities/note/model/blockChangeTypes";
+import { PendingEditorSelection } from "@/features/NoteEditor/lib/selection";
+import { SlashMenu } from "@/features/slashMenu/ui/SlashMenu";
 
 interface ISelectionMenu {
   editorRef: RefObject<HTMLElement | null>;
   applyStyleToSelection: (style: TextStyle) => void;
   getBlockTypeById: (blockId: string) => BlockChangeType | null;
+  onPendingSelection: (selection: PendingEditorSelection) => void;
 }
-
 
 type BlockOption = {
   type: BlockChangeType;
@@ -80,6 +76,7 @@ export const SelectionMenu = ({
   editorRef,
   applyStyleToSelection,
   getBlockTypeById,
+  onPendingSelection,
 }: ISelectionMenu) => {
 
   const {
@@ -89,6 +86,8 @@ export const SelectionMenu = ({
     restoreSelection,
     currentBlockId,
     currentBlockType,
+    savedSelection,
+    openFromCurrentSelection,
   } = useSelectionMenu(editorRef, {
     getBlockTypeById,
   });
@@ -108,15 +107,6 @@ export const SelectionMenu = ({
       BLOCK_OPTIONS.find((item) => item.type === currentBlockType) ??
       BLOCK_OPTIONS[0]
     );
-  }, [currentBlockType]);
-
-  const availableBlockOptions = useMemo(() => {
-    if (!currentBlockType) return [];
-
-    const baseType = toBlockChangeTarget(currentBlockType).type;
-    const allowed = new Set(getAvailableBlockTypes(baseType));
-
-    return BLOCK_OPTIONS.filter((item) => allowed.has(item.type));
   }, [currentBlockType]);
 
   const CurrentBlockIcon = currentBlock.icon;
@@ -148,14 +138,7 @@ export const SelectionMenu = ({
     handleCloseToolbar();
   };
 
-  const handleChangeBlock = (type: BlockChangeType) => {
-    restoreSelection();
-    if (currentBlockId) {
-      changeBlockType(currentBlockId, type);
-    }
-    handleCloseBlockMenu();
-  };
-
+  
   return (
     <>
       <Popover
@@ -237,13 +220,38 @@ export const SelectionMenu = ({
         </Paper>
       </Popover>
 
-      <BlockTypeMenu
+      <SlashMenu
         open={isBlockMenuOpen}
         anchorEl={blockMenuAnchorEl}
-        options={availableBlockOptions}
-        selectedType={currentBlockType}
+        blockId={currentBlockId}
+        currentBlockType={currentBlockType}
+        selection={
+          savedSelection ??
+          (currentBlockId
+            ? {
+              start: {
+                blockId: currentBlockId,
+                offset: 0,
+              },
+              end: {
+                blockId: currentBlockId,
+                offset: 0,
+              },
+            }
+            : null)
+        }
+        onPendingSelection={onPendingSelection}
         onClose={handleCloseBlockMenu}
-        onSelect={handleChangeBlock}
+        onAfterSelect={(type) => {
+          if (type === "img" || type === "file") {
+            handleCloseToolbar();
+            return;
+          }
+
+          requestAnimationFrame(() => {
+            openFromCurrentSelection();
+          });
+        }}
       />
     </>
   );

@@ -27,3 +27,25 @@ export const getEditableTextContext = (root: HTMLElement) => {
     selection: normalized,
   };
 };
+
+export const getEditorSelectionContext = (root: HTMLElement) => {
+  const note = useActiveNoteStore.getState().activeNote;
+  if (!note) return null;
+
+  const selection = getEditorSelection(root);
+  if (!selection) return null;
+
+  const normalized = normalizeEditorSelection(selection, note.blockOrder);
+
+  const startBlock = note.blocksById[normalized.start.blockId];
+  const endBlock = note.blocksById[normalized.end.blockId];
+
+  if (!startBlock || !endBlock) return null;
+
+  return {
+    note,
+    selection: normalized,
+    startBlock,
+    endBlock,
+  };
+};

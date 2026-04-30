@@ -22,6 +22,16 @@ export type SingleBlockSelection = CaretSelection & {
   blockEl: HTMLElement;
 };
 
+export function isRangeInsideEditor(
+  editorRoot: HTMLElement,
+  range: Range
+): boolean {
+  return (
+    editorRoot.contains(range.startContainer) &&
+    editorRoot.contains(range.endContainer)
+  );
+}
+
 export function getSelectionOffsets(
   root: HTMLElement
 ): { start: number; end: number } | null {
@@ -79,15 +89,26 @@ export function findTextPosition(
   return { node: root, offset: 0 };
 }
 
-function getClosestBlockElement(node: Node | null): HTMLElement | null {
+export function getClosestBlockElement(
+  editorRoot: HTMLElement,
+  node: Node | null
+): HTMLElement | null {
   if (!node) return null;
 
-  const el =
+  const element =
     node.nodeType === Node.ELEMENT_NODE
       ? (node as HTMLElement)
       : node.parentElement;
 
-  return el?.closest("[data-block-id]") ?? null;
+  if (!element) return null;
+
+  const blockEl = element.closest<HTMLElement>("[data-block-id]");
+
+  if (!blockEl || !editorRoot.contains(blockEl)) {
+    return null;
+  }
+
+  return blockEl;
 }
 
 function getOffsetWithinBlock(
@@ -117,15 +138,12 @@ export function getEditorSelection(
 
   const range = selection.getRangeAt(0);
 
-  if (
-    !editorRoot.contains(range.startContainer) ||
-    !editorRoot.contains(range.endContainer)
-  ) {
+  if (!isRangeInsideEditor(editorRoot, range)) {
     return null;
   }
 
-  const startBlock = getClosestBlockElement(range.startContainer);
-  const endBlock = getClosestBlockElement(range.endContainer);
+  const startBlock = getClosestBlockElement(editorRoot, range.startContainer);
+  const endBlock = getClosestBlockElement(editorRoot, range.endContainer);
 
   if (!startBlock || !endBlock) return null;
 
@@ -212,11 +230,23 @@ export function getSingleBlockSelection(
 export function setEditorSelection(
   editorRoot: HTMLElement,
   selection: EditorSelection
-) {
+): boolean {
   const startBlock = getBlockElement(editorRoot, selection.start.blockId);
   const endBlock = getBlockElement(editorRoot, selection.end.blockId);
 
-  if (!startBlock || !endBlock) return;
+  if (!startBlock || !endBlock) return false;
+
+  const isSingleVoidBlock =
+    startBlock === endBlock &&
+    startBlock.dataset.voidBlock === "true";
+
+  if (isSingleVoidBlock) {
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+
+    startBlock.focus({ preventScroll: true });
+    return true;
+  }
 
   const startContent = getBlockContentElement(startBlock);
   const endContent = getBlockContentElement(endBlock);
@@ -225,14 +255,18 @@ export function setEditorSelection(
   const endPos = findTextPosition(endContent, selection.end.offset);
 
   const range = document.createRange();
+
   range.setStart(startPos.node, startPos.offset);
   range.setEnd(endPos.node, endPos.offset);
 
   const sel = window.getSelection();
-  if (!sel) return;
+  if (!sel) return false;
 
+  editorRoot.focus({ preventScroll: true });
   sel.removeAllRanges();
   sel.addRange(range);
+
+  return true;
 }
 
 export function setSelectionInBlock(
@@ -245,4 +279,46 @@ export function setSelectionInBlock(
     start: { blockId, offset: start },
     end: { blockId, offset: end },
   });
+}
+
+export function getCurrentRangeInsideEditor(
+  editorRoot: HTMLElement
+): Range | null {
+  const selection = window.getSelection();
+
+  if (!selection || selection.rangeCount === 0) return null;
+
+  const range = selection.getRangeAt(0);
+
+  if (!isRangeInsideEditor(editorRoot, range)) return null;
+
+  return range;
+}
+
+export function scrollEditorSelectionIntoView(
+  editorRoot: HTMLElement,
+  selection: EditorSelection
+) {
+  const blockEl = getBlockElement(editorRoot, selection.start.blockId);
+  if (!blockEl) return;
+
+  const scrollContainer = editorRoot.closest<HTMLElement>("[data-editor-scroll]");
+  if (!scrollContainer) return;
+
+  const blockRect = blockEl.getBoundingClientRect();
+  const containerRect = scrollContainer.getBoundingClientRect();
+
+  const bottomPadding = 80;
+  const topPadding = 40;
+
+  if (blockRect.bottom > containerRect.bottom - bottomPadding) {
+    scrollContainer.scrollTop +=
+      blockRect.bottom - containerRect.bottom + bottomPadding;
+    return;
+  }
+
+  if (blockRect.top < containerRect.top + topPadding) {
+    scrollContainer.scrollTop -=
+      containerRect.top - blockRect.top + topPadding;
+  }
 }

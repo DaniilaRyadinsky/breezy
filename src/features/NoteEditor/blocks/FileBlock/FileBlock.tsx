@@ -4,12 +4,18 @@ import styles from "./FileBlock.module.css";
 import { deleteBlock } from "@/entities/note/model/storeOperations";
 import { useActiveNoteStore } from "@/entities/note/model/store";
 import { deleteFile } from "@/shared/api/uploadFile";
+import { BASE_URL } from "@/shared/consts";
 
 export const FileBlock = ({ id, data }: FileBlockType) => {
   const src = data?.src ?? "";
   const noteId = useActiveNoteStore((state) => state.activeNote?.id);
 
-  const handleDelete = () => {
+  const fileName = src ? src.split("/").pop() ?? "file" : "Файл";
+
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (noteId) {
       deleteFile(src);
       deleteBlock(id);
@@ -17,18 +23,34 @@ export const FileBlock = ({ id, data }: FileBlockType) => {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.fileCard}>
+    <div
+      className={styles.container}
+      contentEditable={false}
+      data-void-block="true"
+    >
+      <a
+        className={styles.fileCard}
+        href={`${BASE_URL}${src}`}
+        download={fileName}
+        target="_blank"
+        rel="noreferrer"
+      >
         <div className={styles.iconContainer}>
           <FileText size={32} className={styles.icon} />
         </div>
+
         <div className={styles.fileName}>
-          {src ? src.split("/").pop() : "Файл"}
+          {fileName}
         </div>
-        <button className={styles.deleteButton} onClick={handleDelete}>
+
+        <button
+          type="button"
+          className={styles.deleteButton}
+          onClick={handleDelete}
+        >
           <X size={16} />
         </button>
-      </div>
+      </a>
     </div>
   );
 };

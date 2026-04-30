@@ -1,4 +1,4 @@
-import { EditorSelection, getEditorSelection, setEditorSelection } from "@/features/NoteEditor/lib/selection";
+import { EditorSelection, getClosestBlockElement, getEditorSelection, setEditorSelection } from "@/features/NoteEditor/lib/selection";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 type SelectionMenuPosition = {
@@ -19,7 +19,7 @@ type UseSelectionMenuResult<TBlockType extends string = string> = {
   currentBlockType: TBlockType | null;
   openFromCurrentSelection: () => void;
   closeMenu: () => void;
-  restoreSelection: () => boolean;
+  restoreSelection: () => EditorSelection | null;
 };
 
 export const useSelectionMenu = <TBlockType extends string = string>(
@@ -46,12 +46,12 @@ export const useSelectionMenu = <TBlockType extends string = string>(
     const root = editorRef.current;
     const savedSelection = savedSelectionRef.current;
 
-    if (!root || !savedSelection) return false;
+    if (!root || !savedSelection) return null;
 
     root.focus({ preventScroll: true });
     setEditorSelection(root, savedSelection);
 
-    return true;
+    return savedSelection;
   }, [editorRef]);
 
   const resetCurrentBlock = useCallback(() => {
@@ -59,46 +59,25 @@ export const useSelectionMenu = <TBlockType extends string = string>(
     setCurrentBlockType(null);
   }, []);
 
-  const getClosestBlockElement = useCallback(
-    (node: Node | null): HTMLElement | null => {
-      const root = editorRef.current;
-      if (!node || !root) return null;
+const updateCurrentBlockFromRange = useCallback(
+  (range: Range) => {
+    const root = editorRef.current;
+    if (!root) return;
 
-      const element =
-        node.nodeType === Node.ELEMENT_NODE
-          ? (node as HTMLElement)
-          : node.parentElement;
+    const blockEl = getClosestBlockElement(root, range.startContainer);
+    const blockId = blockEl?.dataset.blockId ?? null;
 
-      if (!element) return null;
+    setCurrentBlockId(blockId);
 
-      const blockEl = element.closest("[data-block-id]") as HTMLElement | null;
+    if (!blockId || !getBlockTypeById) {
+      setCurrentBlockType(null);
+      return;
+    }
 
-      if (!blockEl || !root.contains(blockEl)) {
-        return null;
-      }
-
-      return blockEl;
-    },
-    [editorRef]
-  );
-
-  const updateCurrentBlockFromRange = useCallback(
-    (range: Range) => {
-      const blockEl = getClosestBlockElement(range.startContainer);
-      const blockId = blockEl?.dataset.blockId ?? null;
-
-      setCurrentBlockId(blockId);
-
-      if (!blockId || !getBlockTypeById) {
-        setCurrentBlockType(null);
-        return;
-      }
-
-      const blockType = getBlockTypeById(blockId) ?? null;
-      setCurrentBlockType(blockType);
-    },
-    [getClosestBlockElement, getBlockTypeById]
-  );
+    setCurrentBlockType(getBlockTypeById(blockId) ?? null);
+  },
+  [editorRef, getBlockTypeById]
+);
 
   const getAnchorRect = useCallback((range: Range): DOMRect | null => {
     const rects = Array.from(range.getClientRects()).filter(

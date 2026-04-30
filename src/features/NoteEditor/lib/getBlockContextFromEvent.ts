@@ -1,15 +1,11 @@
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { EditorSelection } from "./selection";
 
-export const getBlockContextFromEvent = (
+
+export const getBlockContextFromElement = (
   root: HTMLElement,
-  event: Event
+  element: HTMLElement
 ) => {
-  const target = event.target;
-
-  if (!(target instanceof HTMLElement)) return null;
-
-  const blockEl = target.closest<HTMLElement>("[data-block-id]");
+  const blockEl = element.closest<HTMLElement>("[data-block-id]");
   if (!blockEl) return null;
 
   if (!root.contains(blockEl)) return null;
@@ -23,20 +19,29 @@ export const getBlockContextFromEvent = (
   const block = note.blocksById[blockId];
   if (!block) return null;
 
-  const selection: EditorSelection = {
-    start: {
-      blockId,
-      offset: 0,
-    },
-    end: {
-      blockId,
-      offset: 0,
-    },
-  };
-
   return {
     note,
     block,
-    selection,
+    selection: {
+      start: {
+        blockId,
+        offset: 0,
+      },
+      end: {
+        blockId,
+        offset: 0,
+      },
+    },
   };
+};
+
+export const getBlockContextFromEvent = (
+  root: HTMLElement,
+  event: Event
+) => {
+  const target = event.target;
+
+  if (!(target instanceof HTMLElement)) return null;
+
+  return getBlockContextFromElement(root, target);
 };

@@ -22,7 +22,6 @@ interface MainTitleProps {
 
 const MainTitle = forwardRef<MainTitleHandle, MainTitleProps>(({ onEnter }, ref) => {
   const activeNote = useActiveNoteStore((state) => state.activeNote)
-  const isDraft = useActiveNoteStore((state) => state.isDraft)
 
   const { createNote, patchTitle } = useNoteMutations()
 
@@ -42,8 +41,15 @@ const MainTitle = forwardRef<MainTitleHandle, MainTitleProps>(({ onEnter }, ref)
       if (document.activeElement !== titleRef.current) {
         const title = activeNote.title || ''
 
-        titleRef.current.textContent = title
-        setIsTitleEmpty(title.trim().length === 0)
+        
+        if (title === "Untitled") {
+          titleRef.current.textContent = '';
+          setIsTitleEmpty(true);
+        }
+        else {
+          titleRef.current.textContent = title
+          setIsTitleEmpty(title.trim().length === 0)
+        }
       }
     }
   }, [activeNote?.id, activeNote?.title])
@@ -59,19 +65,10 @@ const MainTitle = forwardRef<MainTitleHandle, MainTitleProps>(({ onEnter }, ref)
 
       setIsTitleEmpty(currentTitle.trim().length === 0)
 
-      if (isDraft) {
-        createNote(currentTitle, () => {
-          console.log('создана новая заметка')
-          afterSave?.()
-        })
-
-        return
-      }
-
       patchTitle(currentTitle, activeNote.id)
       afterSave?.()
     },
-    [activeNote, isDraft, createNote, patchTitle]
+    [activeNote, createNote, patchTitle]
   )
 
   const handleBlur = useCallback(() => {

@@ -7,8 +7,6 @@ export const imageBehavior: BlockBehavior<ImgBlockType> = {
     const event = ctx.event as KeyboardEvent;
     const { note, block, commitOperations } = ctx;
 
-    console.log("img block keydown");
-
     if (event.isComposing) return false;
 
     const currentIndex = note.blockOrder.indexOf(block.id);
@@ -49,28 +47,29 @@ export const imageBehavior: BlockBehavior<ImgBlockType> = {
     if (event.key === "Backspace" || event.key === "Delete") {
       event.preventDefault();
 
-      ctx.commitOperations(
-          [
-            {
-              op: "change_block_type",
-              note_id: ctx.note.id,
-              block_id: ctx.block.id,
-              data: {
-                new_type: "text",
-              },
-            },
-          ],
+      commitOperations(
+        [
           {
-            start: {
-              blockId: ctx.block.id,
-              offset: ctx.selection.start.offset,
+            op: "change_block_type",
+            note_id: note.id,
+            block_id: block.id,
+            block_type: 'img',
+            data: {
+              new_type: "text",
             },
-            end: {
-              blockId: ctx.block.id,
-              offset: ctx.selection.start.offset,
-            },
-          }
-        );
+          },
+        ],
+        {
+          start: {
+            blockId: block.id,
+            offset: 0,
+          },
+          end: {
+            blockId: block.id,
+            offset: 0,
+          },
+        }
+      );
 
       return true;
     }

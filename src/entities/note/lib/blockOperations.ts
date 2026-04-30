@@ -204,7 +204,7 @@ export const applyDeleteRangeToPlainTextBlock = <
 
 export const applyChangeLevelOperation = (
   note: ActiveNote,
-  operation: ChangeLevelOp<number>
+  operation: ChangeLevelOp
 ) => {
   const block = note.blocksById[operation.block_id];
 

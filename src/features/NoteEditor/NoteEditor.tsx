@@ -1,6 +1,6 @@
 import { BlocksRegistryProvider, useBlocksRegistry } from "@/features/navigation";
 import { useActiveNoteStore } from "@/entities/note/model/store";
-import { applyDocumentOperations, insertBlock } from "@/entities/note/model/storeOperations";
+import { applyDocumentOperations } from "@/entities/note/model/storeOperations";
 import styles from "./NoteEditor.module.css";
 import TableContents from "./ui/TableContents/TableContents";
 import clsx from "clsx";
@@ -34,15 +34,21 @@ const NoteEditorContent = () => {
     [registerEditorRoot]
   );
 
+  const { setPendingSelection } = usePendingSelection(editorRef);
+
   const {
     applyStyleToSelection,
     isSlashMenuOpen,
     slashMenuAnchorEl,
     slashMenuBlockId,
+    slashMenuSelection,
     closeSlashMenu,
-  } = useDocumentEditor(editorRef, applyDocumentOperations);
+  } = useDocumentEditor(
+    editorRef,
+    applyDocumentOperations,
+    setPendingSelection
+  );
 
-  const { setPendingSelection } = usePendingSelection(editorRef);
   const { createBlockAtEnd } = useEditorBlockCreation({
     editorRef,
     onPendingSelection: setPendingSelection,
@@ -56,27 +62,6 @@ const NoteEditorContent = () => {
   );
 
 
-  const handleBlocksRootClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!activeNote) return;
-
-      const target = event.target as HTMLElement;
-      const clickedBlock = target.closest<HTMLElement>("[data-block-id]");
-      const clickedBlockType = clickedBlock?.dataset.blockType;
-
-      if (clickedBlockType === "text") {
-        return;
-      }
-
-      if (clickedBlock) {
-        return;
-      }
-
-      createBlockAtEnd();
-    },
-    [activeNote, createBlockAtEnd]
-  );
-
 
   return (
     <div className={styles.container}>
@@ -84,6 +69,7 @@ const NoteEditorContent = () => {
         className={clsx(styles.note_editor, {
           [styles.sidebar_mode]: isSidebarOpen,
         })}
+        data-editor-scroll
       >
         <MainTitle
           ref={titleRef}
@@ -97,18 +83,28 @@ const NoteEditorContent = () => {
           suppressContentEditableWarning
           tabIndex={0}
           className={styles.blocks_root}
-          onClick={handleBlocksRootClick}
         >
           {blockOrder?.map((id) => (
             <BaseBlock key={id} id={id} />
           ))}
+          <div
+            className={styles.after_blocks_area}
+            contentEditable={false}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              createBlockAtEnd();
+              console.log("Create new block at end");
+            }}
+          />
         </div>
 
         <SelectionMenu
           editorRef={editorRef}
           applyStyleToSelection={applyStyleToSelection}
           getBlockTypeById={getBlockTypeById}
+          onPendingSelection={setPendingSelection}
         />
+
         <SlashMenu
           open={isSlashMenuOpen}
           anchorEl={slashMenuAnchorEl}
@@ -116,6 +112,8 @@ const NoteEditorContent = () => {
           currentBlockType={
             slashMenuBlockId ? getBlockTypeById(slashMenuBlockId) : null
           }
+          selection={slashMenuSelection}
+          onPendingSelection={setPendingSelection}
           onClose={closeSlashMenu}
         />
       </div>

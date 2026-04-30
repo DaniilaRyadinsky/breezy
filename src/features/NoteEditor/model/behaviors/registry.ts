@@ -6,6 +6,7 @@ import { headerBehavior } from "./header/behavior";
 import { quoteBehavior } from "./quote/behavior";
 import { codeBehavior } from "./code/behavior";
 import { imageBehavior } from "./img/behavior";
+import { fileBehavior } from "./file/behavior";
 
 
 export const blockBehaviors = {
@@ -16,7 +17,7 @@ export const blockBehaviors = {
   code: codeBehavior,
   img: imageBehavior,
   link: undefined,
-  file: undefined,
+  file: fileBehavior,
 } satisfies Partial<{
   [K in BlockType]: BlockBehavior<BlockByType<K>>;
 }>;

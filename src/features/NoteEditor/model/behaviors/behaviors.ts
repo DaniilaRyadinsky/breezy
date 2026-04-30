@@ -1,9 +1,21 @@
-import { RichTextBlock } from "@/entities/note/model/blockTypes";
+import { Block, RichTextBlock } from "@/entities/note/model/blockTypes";
 import { BlockOperation } from "@/entities/note/model/operationsType";
-import { buildApplyStyleOperations, buildDeleteSelectionOperations, createRichTextBlockCopy, getSegmentsLength } from "../../lib/documentRichText";
+import { buildDeleteSelectionOperations, createRichTextBlockCopy, getSegmentsLength } from "../../lib/documentRichText";
 import { isCollapsedEditorSelection } from "../../lib/selection";
-import { ApplyStyleBehaviorContext, BlockBehavior, BlockBehaviorContext } from "./types";
+import { BlockBehavior, BlockBehaviorContext } from "./types";
 import { splitSegments } from "../../lib/segmentsUtils";
+
+const getSelectionOffsetForBlockEnd = (block: Block) => {
+   switch (block.type) {
+    case "text":
+    case "header":
+    case "list":
+      return getSegmentsLength(block.data?.text_data?.text ?? []);
+
+    default:
+      return 0;
+  }
+};
 
 const buildInsertTextOps = (
   noteId: string,
@@ -63,6 +75,108 @@ const buildDeleteForwardOp = (
       end: offset + 1,
     },
   };
+};
+
+const getBlockTextLength = (block: RichTextBlock) => {
+  return getSegmentsLength(block.data.text_data.text);
+};
+
+const deleteEmptyBlockBackward = (
+  ctx: BlockBehaviorContext<RichTextBlock, InputEvent>
+) => {
+  const { note, block, commitOperations } = ctx;
+
+  const currentIndex = note.blockOrder.indexOf(block.id);
+  if (currentIndex === -1) return true;
+
+  if (note.blockOrder.length <= 1) {
+    return true;
+  }
+
+  const previousBlockId = note.blockOrder[currentIndex - 1];
+  const nextBlockId = note.blockOrder[currentIndex + 1];
+
+  const selectionTargetId = previousBlockId ?? nextBlockId;
+  if (!selectionTargetId) return true;
+
+  const selectionTarget = note.blocksById[selectionTargetId];
+  if (!selectionTarget) return true;
+
+  const nextOffset = previousBlockId
+    ? getSelectionOffsetForBlockEnd(selectionTarget)
+    : 0;
+
+  commitOperations(
+    [
+      {
+        op: "delete_block",
+        note_id: note.id,
+        block_id: block.id,
+        data: {},
+      },
+    ],
+    {
+      start: {
+        blockId: selectionTarget.id,
+        offset: nextOffset,
+      },
+      end: {
+        blockId: selectionTarget.id,
+        offset: nextOffset,
+      },
+    }
+  );
+
+  return true;
+};
+
+const deleteEmptyBlockForward = (
+  ctx: BlockBehaviorContext<RichTextBlock, InputEvent>
+) => {
+  const { note, block, commitOperations } = ctx;
+
+  const currentIndex = note.blockOrder.indexOf(block.id);
+  if (currentIndex === -1) return true;
+
+  if (note.blockOrder.length <= 1) {
+    return true;
+  }
+
+  const nextBlockId = note.blockOrder[currentIndex + 1];
+  const previousBlockId = note.blockOrder[currentIndex - 1];
+
+  const selectionTargetId = nextBlockId ?? previousBlockId;
+  if (!selectionTargetId) return true;
+
+  const selectionTarget = note.blocksById[selectionTargetId];
+  if (!selectionTarget) return true;
+
+  const nextOffset = nextBlockId
+    ? 0
+    : getSelectionOffsetForBlockEnd(selectionTarget);
+
+  commitOperations(
+    [
+      {
+        op: "delete_block",
+        note_id: note.id,
+        block_id: block.id,
+        data: {},
+      },
+    ],
+    {
+      start: {
+        blockId: selectionTarget.id,
+        offset: nextOffset,
+      },
+      end: {
+        blockId: selectionTarget.id,
+        offset: nextOffset,
+      },
+    }
+  );
+
+  return true;
 };
 
 export const richTextBaseBehavior: BlockBehavior<RichTextBlock> = {
@@ -129,7 +243,20 @@ export const richTextBaseBehavior: BlockBehavior<RichTextBlock> = {
         }
 
         if (event.inputType === "deleteContentBackward") {
-          if (selection.start.offset === 0) return true;
+          const fullTextLength = getBlockTextLength(block);
+
+          if (fullTextLength === 0) {
+            event.preventDefault();
+
+            return deleteEmptyBlockBackward(
+              ctx as BlockBehaviorContext<RichTextBlock, InputEvent>
+            );
+          }
+
+          if (selection.start.offset === 0) {
+            event.preventDefault();
+            return true;
+          }
 
           event.preventDefault();
 
@@ -157,8 +284,20 @@ export const richTextBaseBehavior: BlockBehavior<RichTextBlock> = {
         }
 
         if (event.inputType === "deleteContentForward") {
-          const fullTextLength = getSegmentsLength(block.data.text_data.text);
-          if (selection.start.offset >= fullTextLength) return true;
+          const fullTextLength = getBlockTextLength(block);
+
+          if (fullTextLength === 0) {
+            event.preventDefault();
+
+            return deleteEmptyBlockForward(
+              ctx as BlockBehaviorContext<RichTextBlock, InputEvent>
+            );
+          }
+
+          if (selection.start.offset >= fullTextLength) {
+            event.preventDefault();
+            return true;
+          }
 
           event.preventDefault();
 
@@ -265,20 +404,6 @@ export const richTextBaseBehavior: BlockBehavior<RichTextBlock> = {
     return true;
   },
 
-  applyStyleToSelection(ctx: ApplyStyleBehaviorContext) {
-    const { note, selection, style, commitOperations } = ctx;
-    const result = buildApplyStyleOperations({
-      noteId: note.id,
-      note,
-      selection,
-      style,
-    });
-
-    if (!result || !result.operations.length) return false;
-
-    commitOperations(result.operations, result.nextSelection);
-    return true;
-  },
 };
 
 

@@ -1,5 +1,11 @@
 import { BlockChangeType } from "./blockChangeTypes";
-import { TextStyle, ListType, HeaderLevel, BlockType, Block } from "./blockTypes";
+import {
+  TextStyle,
+  ListType,
+  HeaderLevel,
+  BlockType,
+  Block,
+} from "./blockTypes";
 
 export type RichTextBlockType = "text" | "list" | "header";
 export type PlainTextBlockType = "quote" | "code";
@@ -11,15 +17,16 @@ export type BaseOperation<TOp extends string, TData> = {
   note_id: string;
 };
 
-export type TypedBlockOperation<
+export type BlockScopedOperation<
   TOp extends string,
-  TBlockType extends RichTextBlockType | PlainTextBlockType,
+  TBlockType extends BlockType,
   TData
 > = BaseOperation<TOp, TData> & {
   block_type: TBlockType;
 };
 
 /* -------------------- Операции создания и удаления -------------------- */
+
 export type CreateBlockOp = BaseOperation<
   "create_block",
   { block: Block; pos: number }
@@ -30,28 +37,35 @@ export type DeleteBlockOp = BaseOperation<
   {}
 >;
 
-export type ChangeBlockTypeOp = BaseOperation<
+export type ChangeBlockTypeOp = BlockScopedOperation<
   "change_block_type",
+  BlockType,
   { new_type: BlockChangeType }
 >;
 
-/* -------------------- Общие текстовые операции -------------------- */
+/* -------------------- Текстовые операции -------------------- */
 
-export type InsertTextOp<T extends RichTextBlockType | PlainTextBlockType = RichTextBlockType | PlainTextBlockType> = TypedBlockOperation<
+export type InsertTextOp<
+  T extends RichTextBlockType | PlainTextBlockType =
+    RichTextBlockType | PlainTextBlockType
+> = BlockScopedOperation<
   "insert_text",
   T,
   { pos: number; new_text: string }
 >;
 
-export type DeleteRangeOp<T extends RichTextBlockType | PlainTextBlockType = RichTextBlockType | PlainTextBlockType> = TypedBlockOperation<
+export type DeleteRangeOp<
+  T extends RichTextBlockType | PlainTextBlockType =
+    RichTextBlockType | PlainTextBlockType
+> = BlockScopedOperation<
   "delete_range",
   T,
   { start: number; end: number }
 >;
 
 export type ApplyStyleOp<
-  T extends RichTextBlockType | PlainTextBlockType = RichTextBlockType | PlainTextBlockType
-> = TypedBlockOperation<
+  T extends RichTextBlockType = RichTextBlockType
+> = BlockScopedOperation<
   "apply_style",
   T,
   {
@@ -74,45 +88,65 @@ export type TextEditOperation =
   | RichTextOperation
   | PlainTextEditOperation;
 
-/* -------------------- Общие field-операции -------------------- */
+/* -------------------- Field-операции -------------------- */
 
-export type ChangeTextOp = BaseOperation<
+export type ChangeTextOp = BlockScopedOperation<
   "change_text",
+  "link",
   { new_text: string }
 >;
 
-export type ChangeSrcOp = BaseOperation<
+export type ChangeImgSrcOp = BlockScopedOperation<
   "change_src",
+  "img",
   { new_src: string }
 >;
 
-export type ChangeAltOp = BaseOperation<
+export type ChangeFileSrcOp = BlockScopedOperation<
+  "change_src",
+  "file",
+  { new_src: string }
+>;
+
+export type ChangeSrcOp =
+  | ChangeImgSrcOp
+  | ChangeFileSrcOp;
+
+export type ChangeAltOp = BlockScopedOperation<
   "change_alt",
+  "img",
   { new_alt: string }
 >;
 
-export type ChangeUrlOp = BaseOperation<
+export type ChangeUrlOp = BlockScopedOperation<
   "change_url",
+  "link",
   { new_url: string }
 >;
 
-export type ChangeLevelOp<TLevel extends number = number> = BaseOperation<
+
+
+export type ChangeLevelOp = BlockScopedOperation<
   "change_level",
-  { new_level: TLevel }
+  "list",
+  { new_level: number }
 >;
 
-export type ChangeValueOp = BaseOperation<
+export type ChangeValueOp = BlockScopedOperation<
   "change_value",
+  "list",
   { new_value: number }
 >;
 
-export type ChangeListTypeOp = BaseOperation<
+export type ChangeListTypeOp = BlockScopedOperation<
   "change_type",
+  "list",
   { new_type: ListType }
 >;
 
-export type AnalyseLangOp = BaseOperation<
+export type AnalyseLangOp = BlockScopedOperation<
   "analyse_lang",
+  "code",
   {}
 >;
 
@@ -127,7 +161,7 @@ export type ListBlockOperation =
   | InsertTextOp<"list">
   | DeleteRangeOp<"list">
   | ApplyStyleOp<"list">
-  | ChangeLevelOp<number>
+  | ChangeLevelOp
   | ChangeValueOp
   | ChangeListTypeOp;
 
@@ -135,7 +169,6 @@ export type HeaderBlockOperation =
   | InsertTextOp<"header">
   | DeleteRangeOp<"header">
   | ApplyStyleOp<"header">
-  | ChangeLevelOp<HeaderLevel>;
 
 export type QuoteBlockOperation =
   | InsertTextOp<"quote">
@@ -147,7 +180,7 @@ export type CodeBlockOperation =
   | AnalyseLangOp;
 
 export type ImgBlockOperation =
-  | ChangeSrcOp
+  | ChangeImgSrcOp
   | ChangeAltOp;
 
 export type LinkBlockOperation =
@@ -155,7 +188,7 @@ export type LinkBlockOperation =
   | ChangeUrlOp;
 
 export type FileBlockOperation =
-  ChangeSrcOp;
+  ChangeFileSrcOp;
 
 export type BlockOperationByType = {
   text: TextBlockOperation;
@@ -169,6 +202,7 @@ export type BlockOperationByType = {
 };
 
 export type OperationFor<T extends BlockType> = BlockOperationByType[T];
+
 export type AnyBlockOperation = BlockOperationByType[BlockType];
 
 export type BlockOperation =

@@ -7,15 +7,22 @@ export const ImageBlock = ({ data }: ImgBlockType) => {
 
   if (!src) {
     return (
-      <div className={styles.placeholder} tabIndex={0} contentEditable={false}>
+      <div className={styles.placeholder}
+        contentEditable={false}
+        data-void-block="true">
         <span>Изображение</span>
       </div>
     );
   }
 
   return (
-    <div className={styles.container} tabIndex={0} contentEditable={false}>
-      <img src={`${BASE_URL}${src}`} alt={ "НЕТ ИЗОБРАЖЕНИЯ"} className={styles.image} />
+    <div className={styles.container} contentEditable={false} data-void-block="true">
+      <img 
+      src={`${BASE_URL}${src}`} 
+      alt={ "НЕТ ИЗОБРАЖЕНИЯ"} 
+      className={styles.image} 
+      draggable={false}
+      />
     </div>
   );
 };
