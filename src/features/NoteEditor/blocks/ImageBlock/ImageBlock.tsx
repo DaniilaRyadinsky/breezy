@@ -18,7 +18,7 @@ export const ImageBlock = ({ data }: ImgBlockType) => {
   return (
     <div className={styles.container} contentEditable={false} data-void-block="true">
       <img 
-      src={`${BASE_URL}${src}`} 
+      src={`${BASE_URL}files/${src}`} 
       alt={ "НЕТ ИЗОБРАЖЕНИЯ"} 
       className={styles.image} 
       draggable={false}

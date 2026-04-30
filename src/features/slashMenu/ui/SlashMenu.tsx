@@ -147,7 +147,7 @@ export const SlashMenu = ({
           block_id: pendingFileBlock.blockId,
           block_type: type,
           data: {
-            new_src: `images/${name}`,
+            new_src: name,
           },
         },
       ]);

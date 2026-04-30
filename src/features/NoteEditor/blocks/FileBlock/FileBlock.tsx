@@ -30,7 +30,7 @@ export const FileBlock = ({ id, data }: FileBlockType) => {
     >
       <a
         className={styles.fileCard}
-        href={`${BASE_URL}${src}`}
+        href={`${BASE_URL}files/${src}`}
         download={fileName}
         target="_blank"
         rel="noreferrer"

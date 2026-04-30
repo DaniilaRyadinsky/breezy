@@ -1,5 +1,24 @@
 .container {
     padding-right: 48px;
     padding-left: 48px;
-    /* border: 1px var(--md-sys-color-outline) solid; */
+    position: relative;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    left:18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background-color: var(--md-sys-color-outline-variant);
+    border-radius: 2.5px;
+    opacity: 0;
+    transition: height 0.15s ease, opacity 0.15s ease;
+}
+
+.container:hover::before {
+    height: 100%;
+    opacity: 1;
 }
