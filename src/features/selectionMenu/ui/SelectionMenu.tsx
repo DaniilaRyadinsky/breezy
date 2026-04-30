@@ -67,6 +67,7 @@ const STYLE_ACTIONS: {
   label: string;
   icon: LucideIcon;
 }[] = [
+    { style: 'default', label: "Default", icon: Type },
     { style: "bold", label: "Bold", icon: Bold },
     { style: "italic", label: "Italic", icon: Italic },
     { style: "underline", label: "Underline", icon: Underline },
@@ -138,7 +139,7 @@ export const SelectionMenu = ({
     handleCloseToolbar();
   };
 
-  
+
   return (
     <>
       <Popover

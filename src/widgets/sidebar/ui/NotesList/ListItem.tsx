@@ -3,6 +3,7 @@ import { TagChip } from '@/entities/tag/ui/TagChip';
 import PointsMenu from '@/shared/ui/PointsMenu/PointsMenu';
 import styles from './List.module.css'
 import { useNavigate } from 'react-router-dom';
+import { moveToTrash } from '@/entities/trash/api';
 
 function formatDate(timestamp: string): string {
   const date = new Date(timestamp);
@@ -24,19 +25,22 @@ function formatDate(timestamp: string): string {
 export interface IListItem {
   item: NoteInfo,
   isSelected?: boolean,
+  onDelete: (id: string) => void,
 }
 
-export const ListItem = ({ item, isSelected }: IListItem) => {
+export const ListItem = ({ item, isSelected, onDelete }: IListItem) => {
 
   const styleSelected = {
     backgroundColor: isSelected ? 'var(--md-sys-color-surface-container-highest)' : '',
     // border: isSelected ? '1px solid var(--md-sys-color-outline)' : ''
   };
 
+
+
   const menuOps = [
     {
       title: "Удалить заметку",
-      action: () => console.log('1')
+      action: () => onDelete(item.id)
     },
     {
       title: "Добавить тег",
