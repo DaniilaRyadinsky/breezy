@@ -2,7 +2,7 @@ import { BlockChangeType, toBlockChangeTarget } from "../model/blockChangeTypes"
 import { BlockType, TextSegmentType, Block } from "../model/blockTypes";
 
 export const ALLOWED_BLOCK_CONVERSIONS: Record<BlockType, readonly BlockType[]> = {
-  text: ["text", "header", "list", "quote", "code", "link"],
+  text: ["text", "header", "list", "quote", "code", "link", "img", "file"],
   header: ["header", "text", "list", "quote", "code", "link"],
   list: ["list", "text", "header", "quote", "code", "link"],
   quote: ["quote", "text", "header", "list", "code", "link"],
@@ -189,7 +189,23 @@ export function convertBlockType(
       };
 
     case "img":
+      return {
+        id: block.id,
+        pos: block.pos,
+        type: "img",
+        data: {
+          alt: "",
+          src: "",
+        },
+      };
     case "file":
-      return null;
+      return {
+        id: block.id,
+        pos: block.pos,
+        type: "file",
+        data: {
+          src: "",
+        },
+      };
   }
 }

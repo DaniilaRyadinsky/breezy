@@ -1,10 +1,10 @@
 import { apiFetch } from "../../../shared/api";
 import { Note, NoteInfo } from "../model/noteTypes";
 
-export const createNoteApi = async (title: string) => {
+export const createNoteApi = async (title: string, note_id: string) => {
   return apiFetch<{id: string}>(`note`, {
     method: "POST",
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ title, note_id })
   });
 }
 

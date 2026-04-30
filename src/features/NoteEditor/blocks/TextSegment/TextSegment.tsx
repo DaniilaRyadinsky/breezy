@@ -16,7 +16,7 @@ const TextSegment = ({style, string}: TextSegmentType) => {
 
 
     return (
-        <span style={getStyle()}>{string? string:''}</span>
+        <span style={getStyle()}>{string || "\u200B"}</span>
     )
 }
 

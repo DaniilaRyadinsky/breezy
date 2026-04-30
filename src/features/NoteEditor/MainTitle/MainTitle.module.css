@@ -1,6 +1,5 @@
 .title_container {
     margin: 25px 48px;
-
 }
 
 .title {
@@ -9,4 +8,24 @@
     line-height: 3.75rem;
     letter-spacing: 0.25px;
     color: var(--md-sys-color-on-surface);
+    outline: none;
+    min-height: 3.75rem;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    position: relative;
+}
+
+.title[data-empty='true']::before {
+    content: attr(data-placeholder);
+    color: var(--md-sys-color-outline);
+    /* opacity: 0.8; */
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    user-select: none;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

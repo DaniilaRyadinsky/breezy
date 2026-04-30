@@ -48,7 +48,7 @@ export const BlockTypeMenu = ({
       <ClickAwayListener onClickAway={onClose}>
         <Paper
           onMouseDown={(e) => {
-            e.preventDefault();
+            // e.preventDefault();
             e.stopPropagation();
           }}
           onClick={(e) => {
@@ -56,6 +56,8 @@ export const BlockTypeMenu = ({
           }}
           sx={{
             minWidth: 220,
+            maxHeight: 300,
+            overflowY: "auto",
             py: 0.5,
             borderRadius: 2,
           }}
@@ -82,6 +84,7 @@ type BlockListItemProps = {
   Icon: LucideIcon;
   selected?: boolean;
   onClick?: () => void;
+  onMouseDown?: (e: React.MouseEvent) => void;
 };
 
 export const BlockListItem = ({
@@ -89,10 +92,15 @@ export const BlockListItem = ({
   Icon,
   selected = false,
   onClick,
+  onMouseDown,
 }: BlockListItemProps) => {
   return (
     <ListItem disablePadding>
-      <ListItemButton selected={selected} onClick={onClick}>
+      <ListItemButton
+        selected={selected}
+        onMouseDown={onMouseDown}
+        onClick={onClick}
+      >
         <ListItemIcon sx={{ minWidth: 32 }}>
           <Icon size={16} />
         </ListItemIcon>

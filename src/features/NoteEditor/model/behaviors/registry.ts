@@ -5,6 +5,7 @@ import { listBehavior } from "./list/behavior";
 import { headerBehavior } from "./header/behavior";
 import { quoteBehavior } from "./quote/behavior";
 import { codeBehavior } from "./code/behavior";
+import { imageBehavior } from "./img/behavior";
 
 
 export const blockBehaviors = {
@@ -13,7 +14,7 @@ export const blockBehaviors = {
   list: listBehavior,
   quote: quoteBehavior,
   code: codeBehavior,
-  img: undefined,
+  img: imageBehavior,
   link: undefined,
   file: undefined,
 } satisfies Partial<{

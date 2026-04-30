@@ -10,6 +10,7 @@ export const TextBlock = ({ id, data }: TextBlockType) => {
     <p
       id={id}
       className={styles.text}
+      data-block-content
     >
       {text.every((item) => item.string.length === 0) ? (
           <br />

@@ -1,5 +1,5 @@
 import { BlockOperation, ChangeBlockTypeOp, RichTextOperation } from "@/entities/note/model/operationsType";
-import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation, applyDeleteRangeToPlainTextBlock, applyInsertTextToPlainTextBlock, applyChangeLevelOperation } from "../lib";
+import { applyRichTextOperationsToTextData, updateBlock, insertBlockAfter, removeBlockById, applyChangeBlockTypeOperation, applyDeleteRangeToPlainTextBlock, applyInsertTextToPlainTextBlock, applyChangeSrcOperation, applyChangeLevelOperation } from "../lib";
 import { useSyncStore } from "../sync/model/syncStore";
 import { SyncType } from "../sync/model/syncTypes";
 import { BlockType, BlockDataByType, Block } from "./blockTypes";
@@ -101,6 +101,9 @@ export const applyStructuralOperationToNote = (
 
     case "change_level":
       return applyChangeLevelOperation(note, operation) ?? note;
+      
+    case "change_src":
+      return applyChangeSrcOperation(note, operation) ?? note;
 
     default:
       return note;
@@ -306,6 +309,7 @@ export const changeBlockType = (
   blockId: string,
   newType: BlockChangeType
 ) => {
+  console.log("Changing block type", blockId, newType);
   const syncOperation = updateActiveNote((note) => {
     const operation: ChangeBlockTypeOp = {
       op: "change_block_type",

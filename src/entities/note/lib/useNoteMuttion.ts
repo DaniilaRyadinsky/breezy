@@ -15,30 +15,52 @@ export const useNoteMutations = () => {
   }
 
   const createNoteMutation = useMutation({
-    mutationFn: (title: string) => createNoteApi(title),
+    mutationFn: ({title, note_id}: {title: string, note_id: string}) => createNoteApi(title, note_id),
     onSuccess: async (res) => {
       getNote(res.id);
+      qc.invalidateQueries({ queryKey: ["notesList"] });
     },
   })
 
   const patchTitleMutation = useMutation({
-    mutationFn: ({ title, id }: { title: string, id: string }) =>
-      patchTitleApi(title, id),
-    onSuccess: () => {
-      console.log("изменен заголовок")
-      qc.invalidateQueries({ queryKey: ["notesList"] });
+    mutationFn: ({ title, note_id }: { title: string, note_id: string }) =>
+      patchTitleApi(title, note_id),
+    onSuccess: (_data, { note_id, title }) => {
+      qc.setQueryData(["note", note_id], (oldNote: any) => {
+      if (!oldNote) return oldNote;
+
+      return {
+        ...oldNote,
+        title,
+      };
+    });
+
+    useActiveNoteStore.setState((state) => {
+      if (!state.activeNote || state.activeNote.id !== note_id) {
+        return state;
+      }
+
+      return {
+        activeNote: {
+          ...state.activeNote,
+          title,
+        },
+      };
+    });
+
+    qc.invalidateQueries({ queryKey: ["notesList"] });
     }
   })
 
   const createNote = (title: string, onSuccess?: () => void) => {
-    createNoteMutation.mutate(title, {
+    createNoteMutation.mutate({ title, note_id: crypto.randomUUID() }, {
       onSuccess: () => onSuccess?.(),
     })
   }
 
 
-  const patchTitle = (title: string, id: string) => {
-    patchTitleMutation.mutate({ title, id })
+  const patchTitle = (title: string, note_id: string) => {
+    patchTitleMutation.mutate({ title, note_id })
   }
 
   return {

@@ -4,11 +4,11 @@ import SidebarItem from './sidebarItem/SidebarItem'
 import { useState } from 'react'
 import Notes from './Panels/Notes'
 import clsx from 'clsx'
-import { useActiveNoteStore } from '@/entities/note/model/store'
 import { useAppStore } from '@/shared/model/AppStore'
 import {ArchiveIcon, CreateIcon, NotesIcon} from '@/shared/assets/icons'
 import { BasketIcon } from '@/shared/ui/icons/BasketIcon'
 import { TagsIcon } from '@/shared/ui/icons/TagsIcon'
+import { useNavigate } from 'react-router-dom'
 
 type sidebarModes = 'notes' | 'tags' | 'archive' | 'basket';
 
@@ -18,12 +18,10 @@ export const Sidebar = () => {
 
   const [mode, setMode] = useState<sidebarModes>('notes')
 
-  const clearNote = useActiveNoteStore((state) => state.clearNote)
+  const navigate = useNavigate();
 
   const handleCreateClick = () => {
-    clearNote();
-  
-    console.log("создана новая заметка")
+    navigate('/');
   }
 
   const handleChangeModeClick = (mode: sidebarModes) => {

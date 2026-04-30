@@ -7,6 +7,9 @@ import { useBlocksRegistry } from '@/features/navigation';
 import styles from './BaseBlock.module.css'
 import { CodeBlock } from '../CodeBlock/CodeBlock';
 import { normalizeBlockTextData } from '@/shared/lib/utils/normalizeTextData';
+import { ImageBlock } from '../ImageBlock/ImageBlock';
+import { FileBlock } from '../FileBlock/FileBlock';
+import { QuoteBlock } from '../QuoteBlock/QuoteBlock';
 
 type BaseBlockProps = {
     id: string;
@@ -41,6 +44,9 @@ export const BaseBlock = memo((props: BaseBlockProps) => {
             {block.type === "list" && <ListBlock {...block} />}
             {block.type === "header" && <HeaderBlock {...block} />}
             {block.type === "code" && <CodeBlock {...block} />}
+            {block.type === "img" && <ImageBlock {...block} />}
+            {block.type === "file" && <FileBlock {...block} />}
+            {block.type === "quote" && <QuoteBlock {...block} />}
         </div>
     );
 });

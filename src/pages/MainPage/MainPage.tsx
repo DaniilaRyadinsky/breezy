@@ -5,14 +5,22 @@ import { NoteEditor } from '@/features/NoteEditor'
 import { useParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useNoteMutations } from '@/entities/note/lib/useNoteMuttion'
+import { useActiveNoteStore } from '@/entities/note/model/store'
 
 export const MainPage = () => {
   const { getNote } = useNoteMutations();
+  const startNewNote = useActiveNoteStore((state) => state.startNewNote)
   const { noteId } = useParams();
 
   useEffect(() => {
     if (noteId) {
       getNote(noteId);
+    }
+    else {
+      startNewNote();
+    }
+    return () => {
+      startNewNote();
     }
 
   }, [noteId]);

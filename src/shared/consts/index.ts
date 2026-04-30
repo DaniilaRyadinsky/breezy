@@ -1,1 +1,1 @@
-export {BASE_URL} from './BaseUrl'
+export {API_URL , BASE_URL} from './BaseUrl'

@@ -10,6 +10,7 @@ import { blockBehaviors } from "../model/behaviors/registry";
 import { ActiveNote } from "@/entities/note/model/noteTypes";
 import { richTextBaseBehavior } from "../model/behaviors/behaviors";
 import { getBlockPlainText } from "../lib/plainText";
+import { getBlockContextFromEvent } from "../lib/getBlockContextFromEvent";
 
 type ApplyDocumentOperations = (
   noteId: string,
@@ -122,7 +123,10 @@ export const useDocumentEditor = (
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.isComposing) return;
 
-      const ctx = getEditableTextContext(root);
+      const ctx =
+        getEditableTextContext(root) ??
+        getBlockContextFromEvent(root, event);
+
       if (!ctx) return;
 
       const behavior = blockBehaviors[ctx.block.type];

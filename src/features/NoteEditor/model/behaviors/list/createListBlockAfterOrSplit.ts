@@ -71,18 +71,10 @@ export const createListBlockAfterOrSplit = (
     return true;
   }
 
-  const { left, right } = splitSegments(block.data.text_data.text, offset);
-
-  const leftBlock: ListBlockType = {
-    ...block,
-    id: crypto.randomUUID(),
-    data: {
-      ...block.data,
-      text_data: {
-        text: left,
-      },
-    },
-  };
+  const { right } = splitSegments(
+    block.data.text_data.text,
+    offset
+  );
 
   const rightBlock: ListBlockType = {
     ...block,
@@ -99,18 +91,13 @@ export const createListBlockAfterOrSplit = (
   commitOperations(
     [
       {
-        op: "delete_block",
+        op: "delete_range",
         note_id: note.id,
         block_id: block.id,
-        data: {},
-      },
-      {
-        op: "create_block",
-        note_id: note.id,
-        block_id: leftBlock.id,
+        block_type: block.type,
         data: {
-          block: leftBlock,
-          pos: currentIndex,
+          start: offset,
+          end: textLength,
         },
       },
       {

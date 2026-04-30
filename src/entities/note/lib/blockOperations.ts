@@ -8,7 +8,7 @@ import {
   TextBlockType
 } from "../model/blockTypes";
 import { ActiveNote } from "../model/noteTypes";
-import { ChangeBlockTypeOp, ChangeLevelOp, RichTextOperation } from "../model/operationsType";
+import { ChangeBlockTypeOp, ChangeLevelOp, ChangeSrcOp, RichTextOperation } from "../model/operationsType";
 
 import { convertBlockType } from "./blockConversion";
 import { PlainTextBlockType } from "./blockGuards";
@@ -137,7 +137,7 @@ export const applyRichTextOperationsToTextData = (
 
   return {
     ...data,
-    text_data:{ text: normalizeSegments(nextText) },
+    text_data: { text: normalizeSegments(nextText) },
   };
 };
 
@@ -218,5 +218,23 @@ export const applyChangeLevelOperation = (
   return updateBlock(note, block.id, block.type, {
     ...block.data,
     level: operation.data.new_level as ListLevel,
+  }) ?? note;
+};
+
+export const applyChangeSrcOperation = (
+  note: ActiveNote,
+  operation: ChangeSrcOp
+): ActiveNote | null => {
+  const block = note.blocksById[operation.block_id];
+
+  if (!block) return null;
+
+  if (block.type !== "img" && block.type !== "file") {
+    return note;
+  }
+
+  return updateBlock(note, block.id, block.type, {
+    ...block.data,
+    src: operation.data.new_src,
   }) ?? note;
 };

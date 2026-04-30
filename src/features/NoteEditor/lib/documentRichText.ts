@@ -117,6 +117,11 @@ export function buildDeleteSelectionOperations(params: {
 
   if (startIndex === -1 || endIndex === -1) return null;
 
+  if (startIndex > endIndex) {
+    console.warn("Selection was not normalized correctly", selection);
+    return null;
+  }
+
   const startBlock = note.blocksById[selection.start.blockId];
   const endBlock = note.blocksById[selection.end.blockId];
 
@@ -181,7 +186,7 @@ export function buildDeleteSelectionOperations(params: {
       start: selection.start.offset,
       end: startLength,
     },
-    block_type: startBlock.type,  
+    block_type: startBlock.type,
   });
 
   if (suffixText.length > 0) {
